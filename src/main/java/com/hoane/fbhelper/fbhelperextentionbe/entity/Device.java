@@ -2,6 +2,8 @@ package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -11,9 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Device {
     @Id
-    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(8)")
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(8)", updatable = false)
     private String id;
 
     @Column(columnDefinition = "NVARCHAR(100)")
@@ -23,12 +26,13 @@ public class Device {
     private String device_type;
 
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean is_active;
+    private Boolean is_active;
 
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean is_online;
+    private Boolean is_online;
 
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
     private LocalDateTime created_at;
 
     @ManyToOne

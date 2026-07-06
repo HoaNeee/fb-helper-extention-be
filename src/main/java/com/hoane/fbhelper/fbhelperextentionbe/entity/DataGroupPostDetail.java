@@ -19,12 +19,11 @@ public class DataGroupPostDetail {
 
     private boolean is_active;
 
+    @ManyToOne
+    @JoinColumn(name = "data_group_post_id", nullable = false, updatable = false)
+    private DataGroupPost data_group_post;
 
     @ManyToOne
-    @JoinColumn(name = "data_group_post_id", nullable = false)
-    private DataGroupPost dataGroupPost;
-
-    @ManyToOne
-    @JoinColumn(name = "device_id", nullable = false)
+    @JoinColumn(name = "device_id", nullable = false, updatable = false)
     private Device device;
 }

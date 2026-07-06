@@ -23,7 +23,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleNotFoundResource(ResourceNotFoundException exception) {
 
-        return ApiResponse.fail(404, "Resource not found", null);
+        Map<String, String> errs = new HashMap<>();
+        errs.put(exception.getName(), exception.getMessage());
+
+        return ApiResponse.fail(404, "Resource not found", errs);
     }
 
     @ExceptionHandler(UserExistException.class)
@@ -36,7 +39,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleExistResource(ResourceExistsException exception) {
         Map<String, String> errs = new HashMap<>();
         errs.put(exception.getName(), exception.getMessage());
-        return ApiResponse.fail(400, "Resource was exist", errs);
+        return ApiResponse.fail(409, "Resource was exist", errs);
     }
 
     @ExceptionHandler(RuntimeException.class)

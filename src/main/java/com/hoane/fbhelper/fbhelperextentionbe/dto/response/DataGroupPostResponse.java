@@ -22,7 +22,7 @@ public class DataGroupPostResponse {
     private Integer priority;
     private String name;
 
-    private int user_id;
+    private Integer user_id;
 
     public DataGroupPostResponse(DataGroupPost dataGroupPost) {
         this.title_match = dataGroupPost.getTitle_match();

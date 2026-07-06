@@ -13,8 +13,12 @@ public class UserService {
     private UserRepository userRepository;
 
 
-    public User findById(int id) {
+    public User findByIdOrThrow(int id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
+    public User findById(int id) {
+        return userRepository.findById(id).orElse(null);
     }
 
     public User save(User user) {

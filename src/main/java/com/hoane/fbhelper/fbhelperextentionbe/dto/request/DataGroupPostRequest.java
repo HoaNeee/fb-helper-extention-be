@@ -38,8 +38,5 @@ public class DataGroupPostRequest {
 
     @Min(value = 0, message = "To member must be greater than or equal to 0")
     private Integer to_member;
-
-    @NotNull(message = "User id can not null", groups = OnCreate.class)
-    private Integer user_id;
 }
 
