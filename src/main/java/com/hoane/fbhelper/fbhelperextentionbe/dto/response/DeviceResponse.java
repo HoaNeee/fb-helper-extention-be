@@ -1,36 +1,38 @@
 package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceResponse {
     private String id;
-    private String device_name;
-    private String device_type;
 
-    private Boolean is_online;
+    private String deviceName;
 
-    private Boolean is_active;
+    private String deviceType;
 
-    private LocalDateTime create_at;
+    private DeviceStatus deviceStatus;
 
-    private Integer user_id;
+    private LocalDateTime createdAt;
 
     public DeviceResponse(Device device) {
         this.id = device.getId();
-        this.device_name = device.getDevice_name();
-        this.device_type = device.getDevice_type();
-        this.is_online = device.getIs_online();
-        this.is_active = device.getIs_active();
-        this.create_at = device.getCreated_at();
-        this.user_id = device.getUser().getId();
+        this.deviceName = device.getDeviceName();
+        this.deviceType = device.getDeviceType();
+        this.deviceStatus = device.getStatus();
+        this.createdAt = device.getCreatedAt();
     }
 }

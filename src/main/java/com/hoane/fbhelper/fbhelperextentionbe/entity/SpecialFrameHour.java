@@ -1,11 +1,15 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.converter.ListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "special_frame_hours")
@@ -13,17 +17,20 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SpecialFrameHour {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private Integer start_time;
-    private Integer end_time;
+    private Integer startTime;
+    private Integer endTime;
 
-    private Integer max_group;
+    private Integer maxGroup;
 
-    private String apply_date;
+    @Convert(converter = ListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<Integer> applyDates;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

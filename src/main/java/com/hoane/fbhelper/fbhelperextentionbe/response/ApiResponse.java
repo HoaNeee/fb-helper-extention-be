@@ -1,6 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.ApiResponseCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,11 +21,14 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private Map<String, String> errors;
+    private Boolean success;
+    private ApiResponseCode code;
 
-    public ApiResponse(int status, String message, T data) {
+    public ApiResponse(int status, String message, Boolean success, T data) {
         this.status = status;
         this.message = message;
         this.data = data;
+        this.success = success;
     }
 
     public ApiResponse(int status, String message, Map<String, String> errors) {
@@ -34,7 +38,17 @@ public class ApiResponse<T> {
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> success(int status, String message, T data) {
-        return ResponseEntity.status(status).body(new ApiResponse<>(status, message, data));
+        return ResponseEntity.status(status).body(new ApiResponse<>(status, message, true, data));
+    }
+
+    public static <T> ResponseEntity<ApiResponse<T>> success(int status, String message, T data, ApiResponseCode code) {
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setStatus(200);
+        response.setMessage(message);
+        response.setData(data);
+        response.setSuccess(true);
+        response.setCode(code);
+        return ResponseEntity.status(status).body(response);
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> success(String message, T data) {
@@ -42,6 +56,7 @@ public class ApiResponse<T> {
         response.setStatus(200);
         response.setMessage(message);
         response.setData(data);
+        response.setSuccess(true);
         return ResponseEntity.ok(response);
     }
 
@@ -49,6 +64,7 @@ public class ApiResponse<T> {
         ApiResponse<T> response = new ApiResponse<>();
         response.setStatus(200);
         response.setMessage("Request successful");
+        response.setSuccess(true);
         response.setData(data);
         return ResponseEntity.ok(response);
     }
@@ -57,6 +73,7 @@ public class ApiResponse<T> {
         ApiResponse response = new ApiResponse<>();
         response.setStatus(status);
         response.setMessage(message);
+        response.setSuccess(true);
         return ResponseEntity.status(status).body(response);
     }
 
@@ -65,6 +82,17 @@ public class ApiResponse<T> {
         response.setStatus(status);
         response.setMessage(message);
         response.setErrors(errors);
+        response.setSuccess(false);
+        return ResponseEntity.status(status).body(response);
+    }
+
+    public static ResponseEntity<ApiResponse<?>> fail(int status, String message, Map<String, String> errors, ApiResponseCode code) {
+        ApiResponse<?> response = new ApiResponse<>();
+        response.setStatus(status);
+        response.setMessage(message);
+        response.setErrors(errors);
+        response.setSuccess(false);
+        response.setCode(code);
         return ResponseEntity.status(status).body(response);
     }
 
@@ -73,6 +101,7 @@ public class ApiResponse<T> {
         response.setStatus(400);
         response.setMessage(message);
         response.setErrors(errors);
+        response.setSuccess(false);
         return ResponseEntity.status(400).body(response);
     }
 
@@ -81,6 +110,7 @@ public class ApiResponse<T> {
         response.setStatus(400);
         response.setMessage("Bad request");
         response.setErrors(errors);
+        response.setSuccess(false);
         return ResponseEntity.status(400).body(response);
     }
 
@@ -88,6 +118,7 @@ public class ApiResponse<T> {
         ApiResponse<?> response = new ApiResponse<>();
         response.setStatus(status);
         response.setMessage(message);
+        response.setSuccess(false);
         return ResponseEntity.status(status).body(response);
     }
 

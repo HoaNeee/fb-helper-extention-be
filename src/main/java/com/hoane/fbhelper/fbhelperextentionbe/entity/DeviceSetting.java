@@ -1,42 +1,63 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
+
+import java.util.List;
 
 @Entity
 @Table(name = "device_settings")
 @Builder
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceSetting {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private boolean is_fix_steal_focus = true;
-    private boolean is_shuffle_groups_need_post = true;
-    private boolean is_random_break_batch = false;
-    private boolean is_random_time_post = false;
-    private boolean is_scheduler = false;
+    private Boolean isFixStealFocus = true;
+    private Boolean isFixStealAllFocus = false;
+    private Boolean isShuffleGroupNeedPost = true;
+    private Boolean isRandomBreakBatch = false;
+    private Boolean isRandomTimePost = false;
+    private Boolean isScheduler = false;
+    private Boolean isSpecialFrameHours = false;
 
-    private boolean is_spammed = false;
-    private boolean is_comment_when_post = false;
-    private boolean is_interact_batch = false;
+    private Boolean isSpammed = false;
+    private Boolean isCommentWhenPost = false;
+    private Boolean isInteractBatch = false;
 
-    private Integer time_delay_click_to_post;
-    private Integer time_delay_fill_content;
-    private Integer time_delay_fill_file;
-    private Integer time_delay_post;
-    private Integer time_delay_open_new_tab;
+    private Integer timeDelayClickToPost = Constant.TIME_DELAY_TO_POST;
+    private Integer timeDelayFillContent = Constant.TIME_DELAY_TO_POST;
+    private Integer timeDelayFillFile = Constant.TIME_DELAY_TO_POST;
+    private Integer timeDelayPost = Constant.TIME_DELAY_TO_POST;
+    private Integer timeDelayOpenNewTab = Constant.TIME_DELAY_TO_POST;
 
-    private Long last_time_post;
+    private Integer maxGroupPerBatch = Constant.MAX_GROUP_PER_BATCH;
 
-    @OneToOne
-    @JoinColumn(name = "device_id", nullable = false)
+    private Long lastTimePost;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> strictlyTitleMatchGroups = Constant.STRICTLY_TITLE_MATCH_GROUPS;
+
+    @ManyToOne
+    @JoinColumn(name = "device_id", nullable = false, updatable = false)
     private Device device;
 
-    public DeviceSetting() {
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
 }

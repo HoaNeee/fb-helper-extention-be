@@ -2,36 +2,69 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataGroupPostResponse {
-    private String title_match;
-    private List<String> images;
-    private List<String> contents;
 
-    private Integer from_member;
-    private Integer to_member;
-    private Integer priority;
-    private String name;
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class DataGroupResponse {
 
-    private Integer user_id;
+        private String id;
 
-    public DataGroupPostResponse(DataGroupPost dataGroupPost) {
-        this.title_match = dataGroupPost.getTitle_match();
-        this.images = dataGroupPost.getImages();
-        this.contents = dataGroupPost.getContents();
-        this.from_member = dataGroupPost.getFrom_member();
-        this.to_member = dataGroupPost.getTo_member();
-        this.priority = dataGroupPost.getPriority();
-        this.name = dataGroupPost.getName();
-        this.user_id = dataGroupPost.getUser().getId();
+        private String title;
+        private List<String> files;
+        private List<String> contents;
+
+        private Integer fromMember;
+        private Integer toMember;
+        private Integer priority;
+        private String name;
+
+
+        private Boolean is_active;
+
+        public DataGroupResponse(DataGroupPost dataGroupPost) {
+            this.id = dataGroupPost.getId();
+            this.title = dataGroupPost.getTitle();
+            this.files = dataGroupPost.getFiles();
+            this.contents = dataGroupPost.getContents();
+            this.fromMember = dataGroupPost.getFromMember();
+            this.toMember = dataGroupPost.getToMember();
+            this.priority = dataGroupPost.getPriority();
+            this.name = dataGroupPost.getName();
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class DataGroupPostDetailResponse {
+        private int id;
+
+        private Boolean isActive;
+
+        private String deviceId;
+
+        private String dataGroupPostId;
+
+        public DataGroupPostDetailResponse(DataGroupPostDetail dataGroupPostDetail) {
+            this.id = dataGroupPostDetail.getId();
+            this.isActive = dataGroupPostDetail.getIsActive();
+            this.deviceId = dataGroupPostDetail.getDevice().getId();
+            this.dataGroupPostId = dataGroupPostDetail.getDataGroupPost().getId();
+        }
     }
 }

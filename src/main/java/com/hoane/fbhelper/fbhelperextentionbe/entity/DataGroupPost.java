@@ -1,6 +1,6 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
-import com.hoane.fbhelper.fbhelperextentionbe.utils.StringListConverter;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,11 +17,12 @@ import java.util.List;
 @NoArgsConstructor
 public class DataGroupPost {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(columnDefinition = "VARCHAR(10)", unique = true, updatable = false, nullable = false)
+    private String id;
 
     @Column(nullable = false, length = 255)
-    private String title_match;
+    private String title;
+
     @Column(columnDefinition = "NVARCHAR(255)") // Use NVARCHAR for Unicode support
     private String name;
 
@@ -31,26 +32,15 @@ public class DataGroupPost {
 
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
-    private List<String> images;
+    private List<String> files;
 
     private Integer priority;
 
-    private Integer from_member;
+    private Integer fromMember;
 
-    private Integer to_member;
+    private Integer toMember;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    public DataGroupPost(String title_match, String name, List<String> contents, List<String> images, Integer priority, Integer from_member, Integer to_member) {
-        this.title_match = title_match;
-        this.name = name;
-        this.contents = contents;
-        this.images = images;
-        this.priority = priority;
-        this.from_member = from_member;
-        this.to_member = to_member;
-    }
 }

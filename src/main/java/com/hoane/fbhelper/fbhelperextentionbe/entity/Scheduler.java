@@ -1,6 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
 
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,14 +19,15 @@ public class Scheduler {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(length = 100)
-    private String scheduler_type;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private SchedulerType schedulerType = SchedulerType.DAILY_HOURS;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "device_id", nullable = false)
+    @JoinColumn(name = "device_id", nullable = false, updatable = false)
     private Device device;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
 }

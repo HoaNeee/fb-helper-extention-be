@@ -12,17 +12,17 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-
-    public User findByIdOrThrow(int id) {
+    public User findByIdOrThrow(String id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    public User findById(int id) {
+    public User findById(String id) {
         return userRepository.findById(id).orElse(null);
     }
 
     public User save(User user) {
         return userRepository.save(user);
     }
+
 
 }

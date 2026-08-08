@@ -17,11 +17,11 @@ public class DataGroupPostDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private boolean is_active;
+    private Boolean isActive;
 
     @ManyToOne
     @JoinColumn(name = "data_group_post_id", nullable = false, updatable = false)
-    private DataGroupPost data_group_post;
+    private DataGroupPost dataGroupPost;
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, updatable = false)

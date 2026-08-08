@@ -17,13 +17,13 @@ public class SpecialFrameHourSetting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private boolean is_active;
+    private Boolean isActive;
 
     @ManyToOne
     @JoinColumn(name = "special_frame_hour_id", nullable = false)
     private SpecialFrameHour specialFrameHour;
 
     @ManyToOne
-    @JoinColumn(name = "device_id", nullable = false)
+    @JoinColumn(name = "device_id", nullable = false, updatable = false)
     private Device device;
 }

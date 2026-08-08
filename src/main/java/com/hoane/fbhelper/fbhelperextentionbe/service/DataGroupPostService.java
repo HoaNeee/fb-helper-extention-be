@@ -1,7 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.service;
 
-import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostDetailRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostRequest;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DataGroupPostResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
@@ -11,12 +11,14 @@ import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceExistsException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DataGroupPostDetailRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DataGroupPostRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DataGroupPostService {
@@ -36,67 +38,99 @@ public class DataGroupPostService {
     private ModelMapper modelMapper;
 
 
-    public List<DataGroupPost> findAllByUser(int user_id) {
+    public List<DataGroupPost> findAllByUser(String user_id) {
         return dataGroupPostRepository.findAllByUser_Id(user_id);
     }
 
+    public List<DataGroupPostDetail> findAllDetailsByDeviceIdAndUserId(String deviceId, String userId) {
+        return dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(deviceId, userId);
+    }
 
-    public DataGroupPost findDataGroupPostByIdOrThrow(int data_group_post_id) {
+    public DataGroupPost findDataGroupPostByIdOrThrow(String data_group_post_id) {
         return dataGroupPostRepository.findById(data_group_post_id).orElseThrow(() -> new ResourceNotFoundException("data_group_post", "Data group post not found"));
     }
 
     @Transactional
-    public DataGroupPost createDataGroupPost(DataGroupPostRequest dataGroupPostRequest, int user_id) {
+    public DataGroupPost createDataGroupPost(DataGroupPostRequest.DataGroupRequest dataGroupPostRequest, String user_id) {
 
         User u = userService.findByIdOrThrow(user_id);
 
+        String id = IdGenerator.generateId(10);
 
         DataGroupPost dataGroupPost = DataGroupPost.builder()
-                .title_match(dataGroupPostRequest.getTitle_match())
+                .id(id)
+                .title(dataGroupPostRequest.getTitle())
                 .name(dataGroupPostRequest.getName())
                 .contents(dataGroupPostRequest.getContents())
-                .images(dataGroupPostRequest.getImages())
-                .from_member(dataGroupPostRequest.getFrom_member())
-                .to_member(dataGroupPostRequest.getTo_member())
+                .files(dataGroupPostRequest.getFiles())
+                .fromMember(dataGroupPostRequest.getFromMember())
+                .toMember(dataGroupPostRequest.getToMember())
                 .user(u)
                 .priority(dataGroupPostRequest.getPriority())
                 .build();
 
-        return dataGroupPostRepository.save(dataGroupPost);
+        String device_id = dataGroupPostRequest.getDeviceId();
+
+        DataGroupPost result = dataGroupPostRepository.save(dataGroupPost);
+
+        if (device_id != null) {
+            Device device = deviceService.findByIdOrThrow(device_id);
+
+            DataGroupPostDetail detail = DataGroupPostDetail.builder()
+                    .device(device)
+                    .dataGroupPost(result)
+                    .isActive(false)
+                    .build();
+
+            dataGroupPostDetailRepository.save(detail);
+        }
+
+        return result;
     }
 
     @Transactional
-    public DataGroupPostResponse update(int id, DataGroupPostRequest dataGroupPostRequest) {
+    public DataGroupPostResponse.DataGroupResponse updateDataGroupPost(String id, DataGroupPostRequest.DataGroupRequest dataGroupPostRequest) {
 
         DataGroupPost existingDataGroupPost = dataGroupPostRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("DataGroupPost", "Data group post not found"));
+
 
         modelMapper.map(dataGroupPostRequest, existingDataGroupPost);
 
         dataGroupPostRepository.save(existingDataGroupPost);
 
-        return new DataGroupPostResponse(existingDataGroupPost);
+        return new DataGroupPostResponse.DataGroupResponse(existingDataGroupPost);
     }
 
     @Transactional
-    public void delete(int id) {
+    public void delete(String id) {
 
-        dataGroupPostDetailRepository.deleteAllByData_group_post_id(id);
+        dataGroupPostDetailRepository.deleteAllByDataGroupPost_Id(id);
 
         dataGroupPostRepository.delete(dataGroupPostRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("DataGroupPost", "Data group post not found")));
     }
 
+    @Transactional
+    public void deleteAll(String userId) {
+
+        dataGroupPostDetailRepository.deleteAllByUser_Id(userId);
+
+        dataGroupPostRepository.deleteAllByUser_Id(userId);
+    }
+
 
     @Transactional
-    public DataGroupPostDetail createDataGroupPostDetail(DataGroupPostDetailRequest dataGroupPostDetailRequest) {
+    public DataGroupPostDetail createDataGroupPostDetail(String userId, DataGroupPostRequest.DataGroupPostDetailRequest dataGroupPostDetailRequest) {
 
-        Device device = deviceService.findByIdOrThrow(dataGroupPostDetailRequest.getDevice_id());
-        DataGroupPost dataGroupPost = findDataGroupPostByIdOrThrow(dataGroupPostDetailRequest.getData_group_post_id());
+        User u = userService.findByIdOrThrow(userId);
 
-        DataGroupPostDetail existed = dataGroupPostDetailRepository.findByDevice_IdAndData_Group_Post_Id(
-                dataGroupPostDetailRequest.getDevice_id(),
-                dataGroupPostDetailRequest.getData_group_post_id()
+        Device device = deviceService.findByIdOrThrow(dataGroupPostDetailRequest.getDeviceId());
+        DataGroupPost dataGroupPost = findDataGroupPostByIdOrThrow(dataGroupPostDetailRequest.getDataGroupPostId());
+
+        DataGroupPostDetail existed = dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(
+                dataGroupPostDetailRequest.getDeviceId(),
+                dataGroupPostDetailRequest.getDataGroupPostId()
         );
         if (existed != null) {
             throw new ResourceExistsException("data_group_post_detail", "Data group post detail already exists for this device and data group post");
@@ -104,17 +138,41 @@ public class DataGroupPostService {
 
         DataGroupPostDetail dataGroupPostDetail = DataGroupPostDetail.builder()
                 .device(device)
-                .data_group_post(dataGroupPost)
-                .is_active(dataGroupPostDetailRequest.getIs_active())
+                .dataGroupPost(dataGroupPost)
+                .isActive(dataGroupPostDetailRequest.getIsActive())
                 .build();
 
         return dataGroupPostDetailRepository.save(dataGroupPostDetail);
     }
 
 
-    public DataGroupPostDetail findDataGroupPostDetailOrThrow(String device_id, int data_group_id) {
+    @Transactional
+    public DataGroupPostDetail updateDataGroupPostDetail(DataGroupPostRequest.DataGroupPostDetailRequest dataGroupPostDetailRequest) {
 
-        DataGroupPostDetail dataGroupPostDetail = dataGroupPostDetailRepository.findByDevice_IdAndData_Group_Post_Id(device_id, data_group_id);
+        DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetail(dataGroupPostDetailRequest.getDeviceId(), dataGroupPostDetailRequest.getDataGroupPostId());
+
+        if (dataGroupPostDetail == null) {
+            dataGroupPostDetail = DataGroupPostDetail.builder()
+                    .device(deviceService.findByIdOrThrow(dataGroupPostDetailRequest.getDeviceId()))
+                    .dataGroupPost(findDataGroupPostByIdOrThrow(dataGroupPostDetailRequest.getDataGroupPostId()))
+                    .isActive(dataGroupPostDetailRequest.getIsActive())
+                    .build();
+        } else {
+            dataGroupPostDetail.setIsActive(dataGroupPostDetailRequest.getIsActive());
+        }
+
+
+        return dataGroupPostDetailRepository.save(dataGroupPostDetail);
+    }
+
+    public DataGroupPostDetail findDataGroupPostDetail(String device_id, String data_group_id) {
+
+        return dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(device_id, data_group_id);
+    }
+
+    public DataGroupPostDetail findDataGroupPostDetailOrThrow(String device_id, String data_group_id) {
+
+        DataGroupPostDetail dataGroupPostDetail = dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(device_id, data_group_id);
 
         if (dataGroupPostDetail == null) {
             throw new ResourceNotFoundException("data_group_post_detail", "Data group post detail not found for this device and data group post");
@@ -123,18 +181,38 @@ public class DataGroupPostService {
         return dataGroupPostDetail;
     }
 
+    public List<DataGroupPost> importDataGroupPost(String userId, RequestModels.DataGroupPostImportRequest request) {
 
-    @Transactional
-    public DataGroupPostDetail updateDataGroupPostDetail(DataGroupPostDetailRequest dataGroupPostDetailRequest) {
 
-        DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetailOrThrow(dataGroupPostDetailRequest.getDevice_id(), dataGroupPostDetailRequest.getData_group_post_id());
+        User u = userService.findByIdOrThrow(userId);
 
-        dataGroupPostDetail.set_active(dataGroupPostDetailRequest.getIs_active());
+        String deviceId = request.deviceId();
 
-        return dataGroupPostDetailRepository.save(dataGroupPostDetail);
+        List<DataGroupPostRequest.DataGroupRequest> listDataGroupPostRequest = request.listDataGroupPost();
+        List<DataGroupPost> dataGroupPostList = dataGroupPostRepository.saveAll(listDataGroupPostRequest.stream()
+                .map(dataGroupPostRequest -> DataGroupPost.builder()
+                        .name(dataGroupPostRequest.getName())
+                        .title(dataGroupPostRequest.getTitle())
+                        .priority(dataGroupPostRequest.getPriority())
+                        .id(IdGenerator.generateId(10))
+                        .user(u)
+                        .contents(dataGroupPostRequest.getContents())
+                        .files(dataGroupPostRequest.getFiles())
+                        .build())
+                .collect(Collectors.toList()));
+
+        dataGroupPostDetailRepository.saveAll(dataGroupPostList.stream()
+                .map(dataGroupPost -> DataGroupPostDetail.builder()
+                        .device(deviceService.findByIdOrThrow(deviceId))
+                        .dataGroupPost(dataGroupPost)
+                        .isActive(false)
+                        .build())
+                .collect(Collectors.toList()));
+
+        return dataGroupPostList;
     }
 
-    public List<DataGroupPostDetail> findAllDetailsByDeviceId(String device_id) {
-        return dataGroupPostDetailRepository.findAllDetailsByDevice_Id(device_id);
+    public Integer getMaxPriority(String userId) {
+        return dataGroupPostRepository.getMaxPriorityByUser_Id(userId);
     }
 }

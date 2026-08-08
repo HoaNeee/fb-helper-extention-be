@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 @DynamicInsert //exclude null value
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(columnDefinition = "VARCHAR(10)", unique = true, nullable = false, updatable = false)
+    private String id;
 
     @Column(columnDefinition = "VARCHAR(100)", nullable = false, unique = true)
     private String username;
@@ -47,18 +47,40 @@ public class User {
     @Column(columnDefinition = "VARCHAR(255)")
     private String avatar;
 
-    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default
-    private boolean is_deleted = false;
+    private Boolean isDeleted = false;
 
     @Column(columnDefinition = "VARCHAR(50) DEFAULT 'PENDING'")
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.PENDING;
 
+    @Builder.Default
+    private Boolean isNewUser = false;
+
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @Builder.Default
-    private LocalDateTime created_at = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
 
+    public boolean isMember() {
+        return this.isActive() && (this.isRole(Role.ROLE_MEMBER) || this.isRole(Role.ROLE_ADMIN));
+    }
+
+    public boolean isStatus(UserStatus status) {
+        return this.status.equals(status);
+    }
+
+    public boolean isRole(Role role) {
+        return this.role.equals(role);
+    }
+
+    public boolean isActive() {
+        return this.isStatus(UserStatus.ACTIVE);
+    }
+
+
+    //Switch using role = member
+//    @Builder.Default
+//    private Boolean is_premium = false;
 }

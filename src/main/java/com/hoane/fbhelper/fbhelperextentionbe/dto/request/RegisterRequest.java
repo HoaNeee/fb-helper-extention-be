@@ -15,7 +15,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Email can not null or empty")
     private String email;
-    
+
     @NotBlank(message = "Password can not null or empty")
     private String password;
 }
