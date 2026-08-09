@@ -189,27 +189,35 @@ public class DataGroupPostService {
         String deviceId = request.deviceId();
 
         List<DataGroupPostRequest.DataGroupRequest> listDataGroupPostRequest = request.listDataGroupPost();
-        List<DataGroupPost> dataGroupPostList = dataGroupPostRepository.saveAll(listDataGroupPostRequest.stream()
-                .map(dataGroupPostRequest -> DataGroupPost.builder()
-                        .name(dataGroupPostRequest.getName())
-                        .title(dataGroupPostRequest.getTitle())
-                        .priority(dataGroupPostRequest.getPriority())
-                        .id(IdGenerator.generateId(10))
-                        .user(u)
-                        .contents(dataGroupPostRequest.getContents())
-                        .files(dataGroupPostRequest.getFiles())
-                        .build())
-                .collect(Collectors.toList()));
+        if (listDataGroupPostRequest != null) {
+            List<DataGroupPost> dataGroupPostList = dataGroupPostRepository.saveAll(listDataGroupPostRequest.stream()
+                    .map(dataGroupPostRequest -> DataGroupPost.builder()
+                            .name(dataGroupPostRequest.getName())
+                            .title(dataGroupPostRequest.getTitle())
+                            .priority(dataGroupPostRequest.getPriority())
+                            .id(IdGenerator.generateId(10))
+                            .user(u)
+                            .contents(dataGroupPostRequest.getContents())
+                            .files(dataGroupPostRequest.getFiles())
+                            .build())
+                    .collect(Collectors.toList()));
 
-        dataGroupPostDetailRepository.saveAll(dataGroupPostList.stream()
-                .map(dataGroupPost -> DataGroupPostDetail.builder()
-                        .device(deviceService.findByIdOrThrow(deviceId))
-                        .dataGroupPost(dataGroupPost)
-                        .isActive(false)
-                        .build())
-                .collect(Collectors.toList()));
+            if (deviceId != null) {
+                dataGroupPostDetailRepository.saveAll(dataGroupPostList.stream()
+                        .map(dataGroupPost -> DataGroupPostDetail.builder()
+                                .device(deviceService.findByIdOrThrow(deviceId))
+                                .dataGroupPost(dataGroupPost)
+                                .isActive(false)
+                                .build())
+                        .collect(Collectors.toList()));
+            }
 
-        return dataGroupPostList;
+            return dataGroupPostList;
+        }
+
+        return List.of();
+
+
     }
 
     public Integer getMaxPriority(String userId) {

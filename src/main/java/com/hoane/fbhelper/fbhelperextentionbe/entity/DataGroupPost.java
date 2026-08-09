@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -39,6 +40,10 @@ public class DataGroupPost {
     private Integer fromMember;
 
     private Integer toMember;
+
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Builder.Default
+    private LocalDateTime createAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "user_id")

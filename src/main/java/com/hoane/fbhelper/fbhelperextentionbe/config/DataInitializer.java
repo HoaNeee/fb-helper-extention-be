@@ -14,6 +14,7 @@ import org.springframework.util.FileSystemUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -44,6 +45,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private InteractBeforePostRepository interactBeforePostRepository;
+
+    @Autowired
+    private SpecialFrameHourRepository specialFrameHourRepository;
+
+    @Autowired
+    private SpecialFrameHourSettingRepository specialFrameHourSettingRepository;
 
     private final Path rootLocation = Paths.get(Constant.PATH_UPLOAD_DIR);
 
@@ -166,5 +173,20 @@ public class DataInitializer implements CommandLineRunner {
                 .maxPostInteractPerBatch(Constant.MAX_POST_INTERACT_PER_BATCH)
                 .build();
         interactBeforePostRepository.save(interactBeforePost);
+
+        SpecialFrameHour specialFrameHour = SpecialFrameHour.builder()
+                .user(u)
+                .startTime(2).endTime(4).maxGroup(8)
+                .applyDates(List.of(1, 2, 3, 4))
+                .build();
+
+        SpecialFrameHourSetting specialFrameHourSetting = new SpecialFrameHourSetting();
+        specialFrameHourSetting.setDevice(device);
+        specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
+        specialFrameHourSetting.setIsActive(true);
+
+        specialFrameHourRepository.save(specialFrameHour);
+
+        specialFrameHourSettingRepository.save(specialFrameHourSetting);
     }
 }

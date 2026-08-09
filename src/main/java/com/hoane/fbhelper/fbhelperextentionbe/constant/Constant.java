@@ -22,5 +22,5 @@ public class Constant {
 
     public static final List<String> STRICTLY_TITLE_MATCH_GROUPS = List.of(strictlyMatchStr.split(", "));
 
-    public static final String PATH_UPLOAD_DIR = "E:/media/fb-extention/uploads";
+    public static final String PATH_UPLOAD_DIR = System.getenv("PATH_UPLOAD_DIR");
 }

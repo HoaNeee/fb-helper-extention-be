@@ -65,6 +65,8 @@ public class DataGroupPostController {
                     DataGroupPostResponse.DataGroupResponse dataGroupResponse = new DataGroupPostResponse.DataGroupResponse(dataGroupPost);
                     if (dataGroupPostDetail != null) {
                         dataGroupResponse.setIs_active(dataGroupPostDetail.getIsActive());
+                    } else {
+                        dataGroupResponse.setIs_active(false);
                     }
                     return dataGroupResponse;
                 })
