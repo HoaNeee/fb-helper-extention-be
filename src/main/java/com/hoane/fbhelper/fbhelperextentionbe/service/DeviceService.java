@@ -2,21 +2,21 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DeviceRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DeviceSettingRequest;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DeviceSetting;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
-import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceExistsException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DeviceRepository;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DeviceSettingRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceSettingRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
@@ -138,6 +138,19 @@ public class DeviceService {
         Device device = findByIdOrThrow(id);
 
         deviceRepository.delete(device);
+    }
+
+    @Transactional
+    public DeviceSetting syncDeviceSetting(String userId, RequestModels.DeviceSyncDataRequest syncDataRequest) {
+        String currentDeviceId = syncDataRequest.currentDeviceId();
+        String targetDeviceId = syncDataRequest.targetDeviceId();
+
+        DeviceSetting targetDeviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(targetDeviceId, userId);
+        DeviceSetting currentDeviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(currentDeviceId, userId);
+
+        BeanUtils.copyProperties(targetDeviceSetting, currentDeviceSetting, "id", "device", "user");
+
+        return deviceSettingRepository.save(currentDeviceSetting);
     }
 
 }

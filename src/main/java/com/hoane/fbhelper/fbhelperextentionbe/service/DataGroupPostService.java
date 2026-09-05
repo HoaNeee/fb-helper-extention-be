@@ -9,8 +9,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceExistsException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DataGroupPostDetailRepository;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DataGroupPostRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.DataGroupPostDetailRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.DataGroupPostRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -48,6 +48,29 @@ public class DataGroupPostService {
 
     public DataGroupPost findDataGroupPostByIdOrThrow(String data_group_post_id) {
         return dataGroupPostRepository.findById(data_group_post_id).orElseThrow(() -> new ResourceNotFoundException("data_group_post", "Data group post not found"));
+    }
+
+    public List<DataGroupPostResponse.DataGroupResponse> getListDataGroupPostAndDetails(String user_id, String device_id) {
+        List<DataGroupPost> dataGroupPosts = findAllByUser(user_id);
+        List<DataGroupPostDetail> dataGroupPostDetails = findAllDetailsByDeviceIdAndUserId(device_id, user_id);
+
+        List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPosts.stream()
+                .map(dataGroupPost -> {
+                    DataGroupPostDetail dataGroupPostDetail = dataGroupPostDetails.stream()
+                            .filter(detail -> detail.getDataGroupPost().getId().equals(dataGroupPost.getId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    DataGroupPostResponse.DataGroupResponse dataGroupResponse = new DataGroupPostResponse.DataGroupResponse(dataGroupPost);
+                    if (dataGroupPostDetail != null) {
+                        dataGroupResponse.setIs_active(dataGroupPostDetail.getIsActive());
+                    } else {
+                        dataGroupResponse.setIs_active(false);
+                    }
+                    return dataGroupResponse;
+                })
+                .toList();
+        return list;
     }
 
     @Transactional
@@ -216,8 +239,55 @@ public class DataGroupPostService {
         }
 
         return List.of();
+    }
 
+    @Transactional
+    public void updateStatusAllDevice(String userId, String dataGroupPostId, DataGroupPostRequest.DataGroupPostUpdateStatusAllDeviceRequest dataGroupPostUpdateStatusAllDeviceRequest) {
 
+        DataGroupPost dataGroupPost = findDataGroupPostByIdOrThrow(dataGroupPostId);
+
+        List<Device> devices = deviceService.findAllByUser(userId);
+
+        Boolean isActive = dataGroupPostUpdateStatusAllDeviceRequest.getIsActive();
+
+        devices.forEach(device -> {
+            DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetail(device.getId(), dataGroupPostId);
+            if (dataGroupPostDetail != null) {
+                dataGroupPostDetail.setIsActive(isActive);
+                dataGroupPostDetailRepository.save(dataGroupPostDetail);
+            } else {
+                dataGroupPostDetail = new DataGroupPostDetail();
+                dataGroupPostDetail.setDevice(device);
+                dataGroupPostDetail.setDataGroupPost(dataGroupPost);
+                dataGroupPostDetail.setIsActive(isActive);
+                dataGroupPostDetailRepository.save(dataGroupPostDetail);
+            }
+        });
+    }
+
+    @Transactional
+    public List<DataGroupPostResponse.DataGroupResponse> syncDataGroupPostToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
+        String currentDeviceId = request.currentDeviceId();
+        String targetDeviceId = request.targetDeviceId();
+
+        Device currentDevice = deviceService.findByIdOrThrow(currentDeviceId);
+
+        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(targetDeviceId, userId);
+
+        dataGroupPostDetails.forEach(dataGroupPostDetail -> {
+            String dataGroupPostId = dataGroupPostDetail.getDataGroupPost().getId();
+            DataGroupPostDetail currentDetail = dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(currentDeviceId, dataGroupPostId);
+            if (currentDetail != null) {
+                currentDetail.setIsActive(dataGroupPostDetail.getIsActive());
+                dataGroupPostDetailRepository.save(currentDetail);
+            } else {
+                currentDetail = new DataGroupPostDetail();
+                currentDetail.setIsActive(dataGroupPostDetail.getIsActive());
+                currentDetail.setDataGroupPost(findDataGroupPostByIdOrThrow(dataGroupPostId));
+                currentDetail.setDevice(currentDevice);
+            }
+        });
+        return getListDataGroupPostAndDetails(userId, currentDeviceId);
     }
 
     public Integer getMaxPriority(String userId) {

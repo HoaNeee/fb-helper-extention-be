@@ -5,7 +5,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.dto.request.CommentPostRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.CommentPostRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.CommentPostRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -90,9 +90,15 @@ public class DeviceController {
         return ApiResponse.success(200, "Update device settings successfully", deviceSetting);
     }
 
-    @PostMapping("/sync-data")
-    public ResponseEntity<ApiResponse<Void>> syncDeviceData(@Valid @RequestBody RequestModels.DeviceSyncDataRequest syncDataRequest) {
-        return ApiResponse.success(200, "Sync device data successfully", null);
+    @PostMapping("/sync-device-setting")
+    public ResponseEntity<ApiResponse<DeviceSetting>> syncDeviceData(@Valid @RequestBody RequestModels.DeviceSyncDataRequest syncDataRequest) {
+
+        String userId = authService.getUserIdFromContext();
+        DeviceSetting syncedDeviceSetting = deviceService.syncDeviceSetting(userId, syncDataRequest);
+        syncedDeviceSetting.setDevice(null);
+        syncedDeviceSetting.setUser(null);
+
+        return ApiResponse.success(200, "Sync device data successfully", syncedDeviceSetting);
     }
 
     @PatchMapping("/{id}")

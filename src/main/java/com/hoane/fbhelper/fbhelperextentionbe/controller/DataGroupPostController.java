@@ -52,26 +52,7 @@ public class DataGroupPostController {
 
         String user_id = authService.getUserIdFromContext();
 
-        List<DataGroupPost> dataGroupPosts = dataGroupPostService.findAllByUser(user_id);
-        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostService.findAllDetailsByDeviceIdAndUserId(device_id, user_id);
-
-        List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPosts.stream()
-                .map(dataGroupPost -> {
-                    DataGroupPostDetail dataGroupPostDetail = dataGroupPostDetails.stream()
-                            .filter(detail -> detail.getDataGroupPost().getId().equals(dataGroupPost.getId()))
-                            .findFirst()
-                            .orElse(null);
-
-                    DataGroupPostResponse.DataGroupResponse dataGroupResponse = new DataGroupPostResponse.DataGroupResponse(dataGroupPost);
-                    if (dataGroupPostDetail != null) {
-                        dataGroupResponse.setIs_active(dataGroupPostDetail.getIsActive());
-                    } else {
-                        dataGroupResponse.setIs_active(false);
-                    }
-                    return dataGroupResponse;
-                })
-                .toList();
-
+        List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPostService.getListDataGroupPostAndDetails(user_id, device_id);
 
         return ApiResponse.success(200, "Get list data group post successfully", list);
     }
@@ -128,12 +109,32 @@ public class DataGroupPostController {
         return ApiResponse.success(200, "Import data group posts successfully", listResponse);
     }
 
+    @PostMapping("/sync-device-data-group-post")
+    public ResponseEntity<ApiResponse<Void>> syncDataGroupPostToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        List<DataGroupPostResponse.DataGroupResponse> result = dataGroupPostService.syncDataGroupPostToDevice(userId, request);
+
+        return ApiResponse.success(200, "Sync data group post to device successfully", null);
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<DataGroupPostResponse.DataGroupResponse>> updateDataGroupPost(@PathVariable String id, @Validated(OnUpdate.class) @RequestBody DataGroupPostRequest.DataGroupRequest request) {
 
         DataGroupPostResponse.DataGroupResponse dataGroupPostResponse = dataGroupPostService.updateDataGroupPost(id, request);
 
         return ApiResponse.success(200, "Update data group post successfully", dataGroupPostResponse);
+    }
+
+    @PatchMapping("/update-status-all-device/{id}")
+    public ResponseEntity<ApiResponse<Void>> updateStatusAllDevice(@PathVariable String id, @Valid @RequestBody DataGroupPostRequest.DataGroupPostUpdateStatusAllDeviceRequest request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        dataGroupPostService.updateStatusAllDevice(userId, id, request);
+
+        return ApiResponse.success(200, "Update status all device successfully", null);
     }
 
     @DeleteMapping("{id}")

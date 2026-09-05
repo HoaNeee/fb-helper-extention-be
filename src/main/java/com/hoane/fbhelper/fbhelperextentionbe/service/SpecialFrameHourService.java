@@ -6,9 +6,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.SpecialFrameHour;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.SpecialFrameHourSetting;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
-import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.SpecialFrameHourRepository;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.SpecialFrameHourSettingRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.SpecialFrameHourRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.SpecialFrameHourSettingRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,11 @@ public class SpecialFrameHourService {
                             break;
                         }
                     }
+                    if (setting == null) {
+                        return new SpecialFrameHourResponse(specialFrameHour);
+                    }
                     return new SpecialFrameHourResponse(specialFrameHour, setting);
+
                 }).toList();
 
         return frameHourResponses;
@@ -81,15 +84,16 @@ public class SpecialFrameHourService {
 
         String device_id = specialFrameHourRequest.getDeviceId();
 
-        Device device = deviceService.findByIdOrThrow(device_id);
+        if (device_id != null) {
+            Device device = deviceService.findByIdOrThrow(device_id);
 
-        SpecialFrameHourSetting specialFrameHourSetting = new SpecialFrameHourSetting();
-        specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
-        specialFrameHourSetting.setDevice(device);
-        specialFrameHourSetting.setIsActive(true);
+            SpecialFrameHourSetting specialFrameHourSetting = new SpecialFrameHourSetting();
+            specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
+            specialFrameHourSetting.setDevice(device);
+            specialFrameHourSetting.setIsActive(true);
 
-        specialFrameHourSettingRepository.save(specialFrameHourSetting);
-
+            specialFrameHourSettingRepository.save(specialFrameHourSetting);
+        }
 
         return specialFrameHour;
     }
@@ -112,11 +116,19 @@ public class SpecialFrameHourService {
         SpecialFrameHourSetting specialFrameHourSetting = specialFrameHourSettingRepository.findByDevice_IdAndSpecialFrameHour_Id(device_id, special_frame_hour_id);
 
         if (specialFrameHourSetting == null) {
-            throw new ResourceNotFoundException("special_frame_hour", "Special frame hour setting not found with special_frame_hour_id: " + special_frame_hour_id + " and device_id: " + device_id);
+            SpecialFrameHour specialFrameHour = findSpecialFrameHourByIdOrThrow(special_frame_hour_id);
+            Device device = deviceService.findByIdOrThrow(device_id);
+
+            specialFrameHourSetting = new SpecialFrameHourSetting();
+            specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
+            specialFrameHourSetting.setDevice(device);
+            specialFrameHourSetting.setIsActive(specialFrameSettingRequest.getIsActive());
+            specialFrameHourSettingRepository.save(specialFrameHourSetting);
+        } else {
+            specialFrameHourSetting.setIsActive(specialFrameSettingRequest.getIsActive());
+            specialFrameHourSettingRepository.save(specialFrameHourSetting);
         }
 
-        specialFrameHourSetting.setIsActive(specialFrameSettingRequest.getIsActive());
-        specialFrameHourSettingRepository.save(specialFrameHourSetting);
     }
 
     @Transactional

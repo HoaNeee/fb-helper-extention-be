@@ -3,22 +3,12 @@ package com.hoane.fbhelper.fbhelperextentionbe.controller;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.LoginRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RegisterRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.LoginResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.UserDetailsResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
-import com.hoane.fbhelper.fbhelperextentionbe.exception.UserExistException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.UserRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.UserRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

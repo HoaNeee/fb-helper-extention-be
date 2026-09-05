@@ -15,7 +15,7 @@ public class RequestModels {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record DeviceSyncDataRequest(
             @NotBlank(message = "Current device id can not null or empty") @Size(min = 8, message = "Current device id must be at least 8 characters") String currentDeviceId,
-            @NotBlank(message = "Device id sync not null or empty") @Size(min = 8, message = "Device id sync must be at least 8 characters") String deviceSyncId
+            @NotBlank(message = "Device id sync not null or empty") @Size(min = 8, message = "Device id sync must be at least 8 characters") String targetDeviceId
     ) {
     }
 

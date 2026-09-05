@@ -1,10 +1,8 @@
-package com.hoane.fbhelper.fbhelperextentionbe.reporitory;
+package com.hoane.fbhelper.fbhelperextentionbe.repository;
 
 import com.hoane.fbhelper.fbhelperextentionbe.entity.SchedulerDetail;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 

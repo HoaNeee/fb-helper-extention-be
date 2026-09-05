@@ -35,8 +35,7 @@ public class SpecialFrameHourRequest {
 
         @NotNull(message = "apply_dates is required", groups = OnCreate.class)
         private List<Integer> applyDates;
-
-        @NotNull(message = "device_id is required", groups = OnCreate.class)
+        
         @Size(min = 8, message = "device_id must be at least 8 characters", groups = OnCreate.class)
         private String deviceId;
 

@@ -7,16 +7,13 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceExistsException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.DeviceRepository;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.SchedulerDetailRepository;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.SchedulerRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.SchedulerDetailRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.SchedulerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class SchedulerService {

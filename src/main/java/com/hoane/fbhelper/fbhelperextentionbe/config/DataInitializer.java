@@ -4,7 +4,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.UserStatus;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.*;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -140,6 +140,14 @@ public class DataInitializer implements CommandLineRunner {
 
         deviceRepository.save(device);
 
+        Device device1 = Device.builder()
+                .id("xyz12348")
+                .deviceName("Hoa chrome device 2")
+                .deviceType("chrome")
+                .build();
+
+        deviceRepository.save(device1);
+
         DataGroupPostDetail dataGroupPostDetail = DataGroupPostDetail.builder()
                 .device(device)
                 .dataGroupPost(dataGroupPost)
@@ -151,7 +159,13 @@ public class DataInitializer implements CommandLineRunner {
         DeviceSetting deviceSetting = new DeviceSetting();
         deviceSetting.setDevice(device);
         deviceSetting.setUser(u);
+        deviceSetting.setIsSpecialFrameHours(true);
         deviceSettingRepository.save(deviceSetting);
+
+        DeviceSetting deviceSetting1 = new DeviceSetting();
+        deviceSetting1.setDevice(device1);
+        deviceSetting1.setUser(u);
+        deviceSettingRepository.save(deviceSetting1);
 
 
         Scheduler scheduler = Scheduler.builder()

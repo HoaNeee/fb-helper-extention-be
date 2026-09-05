@@ -1,13 +1,11 @@
 package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.request.CommentPostRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.InteractBeforePostRequest;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.InteractBeforePost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
-import com.hoane.fbhelper.fbhelperextentionbe.reporitory.InteractBeforePostRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.repository.InteractBeforePostRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

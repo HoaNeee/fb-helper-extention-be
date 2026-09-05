@@ -69,5 +69,18 @@ public class DataGroupPostRequest {
     }
 
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @ToString
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class DataGroupPostUpdateStatusAllDeviceRequest {
+
+        @NotNull(message = "is_active can not null")
+        private Boolean isActive;
+    }
+
+
 }
 

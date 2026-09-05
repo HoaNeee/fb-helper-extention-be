@@ -25,7 +25,7 @@ public class DeviceSetting {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     private Boolean isFixStealFocus = true;
     private Boolean isFixStealAllFocus = false;
@@ -38,6 +38,8 @@ public class DeviceSetting {
     private Boolean isSpammed = false;
     private Boolean isCommentWhenPost = false;
     private Boolean isInteractBatch = false;
+
+    private Boolean isRemote = false;
 
     private Integer timeDelayClickToPost = Constant.TIME_DELAY_TO_POST;
     private Integer timeDelayFillContent = Constant.TIME_DELAY_TO_POST;
