@@ -1,6 +1,5 @@
 package com.hoane.fbhelper.fbhelperextentionbe.dto.request;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,35 +9,31 @@ import lombok.NoArgsConstructor;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DeviceSettingRequest {
-
+public class PostConfigRequest {
     @NotBlank(message = "Device id can not null or empty")
     @Size(min = 8, message = "Device id must be at least 8 characters")
     private String deviceId;
 
-    private Boolean isFixStealFocus;
+    private Integer maxGroupPerBatch;
 
-    private Boolean isFixStealAllFocus;
+    private Integer timeDelayClickToPost;
 
-    private Boolean isRandomBreakBatch;
+    private Integer timeDelayFillContent;
 
-    private Boolean isRandomTimePost;
+    private Integer timeDelayFillFile;
 
-    private Boolean isScheduler;
+    private Integer timeDelayPost;
 
-    private Boolean isSpecialFrameHours;
-
-    private Boolean isCommentWhenPost;
-
-    private Boolean isInteractBatch;
+    private Integer timeDelayOpenNewTab;
     
-    private List<String> strictlyTitleMatchGroups;
+    private Boolean isShuffleGroupNeedPost;
 
+    private Boolean isSpammed;
+
+    private Long lastTimePost;
 }

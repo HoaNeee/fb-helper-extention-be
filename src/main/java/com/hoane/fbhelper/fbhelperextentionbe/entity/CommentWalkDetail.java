@@ -9,13 +9,13 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
 @Entity
-@Table(name = "data_group_post_details")
+@Table(name = "comment_walk_details")
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DataGroupPostDetail {
+public class CommentWalkDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -23,8 +23,8 @@ public class DataGroupPostDetail {
     private Boolean isActive;
 
     @ManyToOne
-    @JoinColumn(name = "data_group_post_id", nullable = false, updatable = false)
-    private DataGroupPost dataGroupPost;
+    @JoinColumn(name = "comment_walk_id", nullable = false, updatable = false)
+    private CommentWalk commentWalk;
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, updatable = false)

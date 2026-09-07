@@ -35,6 +35,12 @@ public class DataInitializer implements CommandLineRunner {
     private DeviceSettingRepository deviceSettingRepository;
 
     @Autowired
+    private PostConfigRepository postConfigRepository;
+
+    @Autowired
+    private CommentWalkConfigRepository commentWalkConfigRepository;
+
+    @Autowired
     private DataGroupPostDetailRepository dataGroupPostDetailRepository;
 
     @Autowired
@@ -52,7 +58,14 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private SpecialFrameHourSettingRepository specialFrameHourSettingRepository;
 
+    @Autowired
+    private CommentWalkRepository commentWalkRepository;
+
+    @Autowired
+    private CommentWalkDetailRepository commentWalkDetailRepository;
+
     private final Path rootLocation = Paths.get(Constant.PATH_UPLOAD_DIR);
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -121,8 +134,8 @@ public class DataInitializer implements CommandLineRunner {
         DataGroupPost dataGroupPost = DataGroupPost.builder()
                 .title("Cau giay")
                 .name("79 cau giay")
-                .files(java.util.List.of("https://picsum.photos/200/300", "https://picsum.photos/300/200"))
-                .contents(java.util.List.of("Content 1", "Content 2"))
+                .files(List.of("https://picsum.photos/200/300", "https://picsum.photos/300/200"))
+                .contents(List.of("Content 1", "Content 2"))
                 .fromMember(0)
                 .toMember(100)
                 .user(u)
@@ -167,6 +180,15 @@ public class DataInitializer implements CommandLineRunner {
         deviceSetting1.setUser(u);
         deviceSettingRepository.save(deviceSetting1);
 
+        PostConfig postConfig = new PostConfig();
+        postConfig.setDevice(device);
+        postConfig.setUser(u);
+        postConfigRepository.save(postConfig);
+
+        CommentWalkConfig commentWalkConfig = new CommentWalkConfig();
+        commentWalkConfig.setDevice(device);
+        commentWalkConfig.setUser(u);
+        commentWalkConfigRepository.save(commentWalkConfig);
 
         Scheduler scheduler = Scheduler.builder()
                 .device(device)
@@ -202,5 +224,30 @@ public class DataInitializer implements CommandLineRunner {
         specialFrameHourRepository.save(specialFrameHour);
 
         specialFrameHourSettingRepository.save(specialFrameHourSetting);
+
+        CommentWalk commentWalk = CommentWalk.builder()
+                .titleQuerySearchs(List.of("query1", "query2"))
+                .user(u)
+                .keywordsCertainChoice(List.of("keyword1", "keyword2"))
+                .keywordQueryIncludes(List.of("include1", "include2"))
+                .keywordQueryExcludes(List.of("exclude1", "exclude2"))
+                .contents(List.of("content1", "content2"))
+                .files(List.of("https://picsum.photos/200/300"))
+                .matchRateValueContentQueryIncludes(2)
+                .name("Comment Walk 1")
+                .id(Constant.COMMENT_WALK_ID)
+                .build();
+
+        commentWalkRepository.save(commentWalk);
+
+        CommentWalkDetail commentWalkDetail = CommentWalkDetail.builder()
+                .commentWalk(commentWalk)
+                .device(device)
+                .isActive(true)
+                .build();
+
+        commentWalkDetailRepository.save(commentWalkDetail);
+
+
     }
 }

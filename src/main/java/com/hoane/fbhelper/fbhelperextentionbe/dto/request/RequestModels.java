@@ -31,4 +31,10 @@ public class RequestModels {
             String deviceId
     ) {
     }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record ChangeStatusTool(
+            @NotNull(message = "Is stop task can not null or empty") Boolean isStopTask
+    ) {
+    }
 }

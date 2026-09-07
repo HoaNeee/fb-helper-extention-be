@@ -1,5 +1,6 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,46 +10,53 @@ import lombok.NoArgsConstructor;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "data_group_posts")
+@Table(name = "comment_walks")
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DataGroupPost {
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
+public class CommentWalk {
+
     @Id
-    @Column(columnDefinition = "VARCHAR(10)", unique = true, updatable = false, nullable = false)
+    @Column(unique = true, updatable = false, nullable = false)
     private String id;
 
-    @Column(nullable = false, length = 255)
-    private String title;
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> titleQuerySearchs;
 
-    @Column(columnDefinition = "NVARCHAR(255)") // Use NVARCHAR for Unicode support
     private String name;
 
     @Convert(converter = StringListConverter.class)
-    @Column(columnDefinition = "TEXT") //TEXT will be used to store large text data
+    @Column(columnDefinition = "TEXT")
     private List<String> contents;
 
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
     private List<String> files;
 
-    private Integer priority;
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> keywordQueryIncludes;
 
-    private Integer fromMember;
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> keywordQueryExcludes;
 
-    private Integer toMember;
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> keywordsCertainChoice;
 
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Builder.Default
-    private LocalDateTime createAt = LocalDateTime.now();
+    private Integer matchRateValueContentQueryIncludes;
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
 }

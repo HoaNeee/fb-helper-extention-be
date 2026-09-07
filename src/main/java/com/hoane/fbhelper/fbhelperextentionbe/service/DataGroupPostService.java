@@ -63,9 +63,9 @@ public class DataGroupPostService {
 
                     DataGroupPostResponse.DataGroupResponse dataGroupResponse = new DataGroupPostResponse.DataGroupResponse(dataGroupPost);
                     if (dataGroupPostDetail != null) {
-                        dataGroupResponse.setIs_active(dataGroupPostDetail.getIsActive());
+                        dataGroupResponse.setIsActive(dataGroupPostDetail.getIsActive());
                     } else {
-                        dataGroupResponse.setIs_active(false);
+                        dataGroupResponse.setIsActive(false);
                     }
                     return dataGroupResponse;
                 })
@@ -145,8 +145,6 @@ public class DataGroupPostService {
 
     @Transactional
     public DataGroupPostDetail createDataGroupPostDetail(String userId, DataGroupPostRequest.DataGroupPostDetailRequest dataGroupPostDetailRequest) {
-
-        User u = userService.findByIdOrThrow(userId);
 
         Device device = deviceService.findByIdOrThrow(dataGroupPostDetailRequest.getDeviceId());
         DataGroupPost dataGroupPost = findDataGroupPostByIdOrThrow(dataGroupPostDetailRequest.getDataGroupPostId());

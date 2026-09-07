@@ -1,16 +1,14 @@
 package com.hoane.fbhelper.fbhelperextentionbe.controller;
 
 
-import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DeviceRequest;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DeviceSettingRequest;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.*;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnCreate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnUpdate;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.CommentWalkConfigResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.DeviceSetting;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceSettingResponse;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.PostConfigResponse;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.DeviceService;
@@ -57,17 +55,36 @@ public class DeviceController {
 
 
     @GetMapping("/settings/{device_id}")
-    public ResponseEntity<ApiResponse<DeviceSetting>> getDeviceSettingOfDevice(@PathVariable String device_id) {
+    public ResponseEntity<ApiResponse<DeviceSettingResponse>> getDeviceSettingOfDevice(@PathVariable String device_id) {
 
         String userId = authService.getUserIdFromContext();
 
-        DeviceSetting deviceSetting = deviceService.findDeviceSettingByDeviceIdAndUserId(device_id, userId);
+        DeviceSettingResponse deviceSettingResponse = deviceService.getAllDataDeviceSetting(device_id, userId);
 
-        deviceSetting.setDevice(null);
-        deviceSetting.setUser(null);
-        mapSettingForMember(deviceSetting, userService.findByIdOrThrow(userId));
+        mapSettingResponseForMember(deviceSettingResponse, userService.findById(userId));
 
-        return ApiResponse.success(200, "Get device settings successfully", deviceSetting);
+        return ApiResponse.success(200, "Get device settings successfully", deviceSettingResponse);
+    }
+
+    @GetMapping("/settings/post-config/{device_id}")
+    public ResponseEntity<ApiResponse<PostConfigResponse>> getPostConfigOfDevice(@PathVariable String device_id) {
+
+        String userId = authService.getUserIdFromContext();
+
+        PostConfig postConfig = deviceService.findPostConfigByDeviceIdAndUserId(device_id, userId);
+
+        return ApiResponse.success(200, "Get post config successfully", new PostConfigResponse(postConfig));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MEMBER')")
+    @GetMapping("/settings/comment-walk-config/{device_id}")
+    public ResponseEntity<ApiResponse<CommentWalkConfigResponse>> getCommentWalkConfigOfDevice(@PathVariable String device_id) {
+
+        String userId = authService.getUserIdFromContext();
+
+        CommentWalkConfig commentWalkConfig = deviceService.findCommentWalkConfigByDeviceIdAndUserId(device_id, userId);
+
+        return ApiResponse.success(200, "Get comment walk config successfully", new CommentWalkConfigResponse(commentWalkConfig));
     }
 
     @PostMapping
@@ -81,13 +98,40 @@ public class DeviceController {
     }
 
     @PostMapping("/settings")
-    public ResponseEntity<ApiResponse<DeviceSetting>> createDeviceSettings(DeviceSettingRequest deviceSettingRequest) {
+    public ResponseEntity<ApiResponse<DeviceSettingResponse>> createDeviceSettings(DeviceSettingRequest deviceSettingRequest) {
 
         String userId = authService.getUserIdFromContext();
 
-        DeviceSetting deviceSetting = deviceService.createDeviceSetting(deviceSettingRequest, userId);
+        String deviceId = deviceSettingRequest.getDeviceId();
 
-        return ApiResponse.success(200, "Update device settings successfully", deviceSetting);
+        DeviceSetting deviceSetting = deviceService.createDeviceSetting(deviceId, userId);
+
+        return ApiResponse.success(200, "Update device settings successfully", new DeviceSettingResponse(deviceSetting));
+    }
+
+    @PostMapping("/settings/post-config")
+    public ResponseEntity<ApiResponse<PostConfigResponse>> createPostConfig(DeviceSettingRequest deviceSettingRequest) {
+
+        String userId = authService.getUserIdFromContext();
+
+        String deviceId = deviceSettingRequest.getDeviceId();
+
+        PostConfig postConfig = deviceService.createNewPostConfig(deviceId, userId);
+
+        return ApiResponse.success(200, "Update device settings successfully", new PostConfigResponse(postConfig));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MEMBER')")
+    @PostMapping("/settings/comment-walk-config")
+    public ResponseEntity<ApiResponse<CommentWalkConfigResponse>> createCommentWalkConfig(DeviceSettingRequest deviceSettingRequest) {
+
+        String userId = authService.getUserIdFromContext();
+
+        String deviceId = deviceSettingRequest.getDeviceId();
+
+        CommentWalkConfig commentWalkConfig = deviceService.createNewCommentWalkConfig(deviceId, userId);
+
+        return ApiResponse.success(200, "Update device settings successfully", new CommentWalkConfigResponse(commentWalkConfig));
     }
 
     @PostMapping("/sync-device-setting")
@@ -119,6 +163,46 @@ public class DeviceController {
         return ApiResponse.success(200, "Update device settings successfully", deviceSettingRequest);
     }
 
+    @PatchMapping("/settings/post-config")
+    public ResponseEntity<ApiResponse<PostConfigResponse>> updatePostConfig(@Valid @RequestBody PostConfigRequest postConfigRequest) {
+
+        String userId = authService.getUserIdFromContext();
+
+        deviceService.updatePostConfig(userId, postConfigRequest);
+
+        return ApiResponse.success(200, "Update post config successfully", new PostConfigResponse(postConfigRequest));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MEMBER')")
+    @PatchMapping("/settings/comment-walk-config")
+    public ResponseEntity<ApiResponse<CommentWalkConfigResponse>> updateCommentWalkConfig(@Valid @RequestBody CommentWalkConfigRequest commentWalkConfigRequest) {
+
+        String userId = authService.getUserIdFromContext();
+
+        deviceService.updateCommentWalkConfig(userId, commentWalkConfigRequest);
+
+        return ApiResponse.success(200, "Update comment walk config successfully", new CommentWalkConfigResponse(commentWalkConfigRequest));
+    }
+
+    @PatchMapping("/settings/{device_id}/change-status-tool")
+    public ResponseEntity<ApiResponse<PostConfigResponse>> changeStatusTool(@PathVariable String device_id, @Valid @RequestBody RequestModels.ChangeStatusTool request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        System.out.println(request.toString());
+
+        deviceService.changeStatusTool(userId, device_id, request);
+
+        String msg = "Turn on tool successfully";
+
+        if (request.isStopTask()) {
+            msg = "Turn off tool successfully";
+        }
+
+        return ApiResponse.success(200, msg, null);
+
+    }
+
     //maybe dont need
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteDevice(@PathVariable String id) {
@@ -127,14 +211,15 @@ public class DeviceController {
     }
 
 
-    private void mapSettingForMember(DeviceSetting deviceSetting, User user) {
-
+    private void mapSettingResponseForMember(DeviceSettingResponse response, User user) {
         if (!user.isMember()) {
-            deviceSetting.setIsRandomBreakBatch(null);
-            deviceSetting.setIsSpecialFrameHours(null);
-            deviceSetting.setIsRandomTimePost(null);
-            deviceSetting.setIsFixStealAllFocus(null);
+            response.setIsFixStealAllFocus(null);
+            response.setCommentWalkConfig(null);
+            response.setIsRandomBreakBatch(null);
+            response.setIsSpecialFrameHours(null);
+
         }
+
     }
 
 }

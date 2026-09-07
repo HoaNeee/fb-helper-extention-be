@@ -32,7 +32,7 @@ public class DataGroupPostResponse {
         private String name;
 
 
-        private Boolean is_active;
+        private Boolean isActive;
 
         public DataGroupResponse(DataGroupPost dataGroupPost) {
             this.id = dataGroupPost.getId();

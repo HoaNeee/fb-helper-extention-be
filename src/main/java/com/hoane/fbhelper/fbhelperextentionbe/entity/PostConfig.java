@@ -13,41 +13,38 @@ import tools.jackson.databind.annotation.JsonNaming;
 
 import java.util.List;
 
+
 @Entity
-@Table(name = "device_settings")
+@Table(name = "post_configs")
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DeviceSetting {
+public class PostConfig {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
-    private Boolean isFixStealFocus = true;
+    private Integer maxGroupPerBatch = Constant.MAX_GROUP_PER_BATCH;
 
-    private Boolean isFixStealAllFocus = false;
+    private Integer timeDelayClickToPost = Constant.TIME_DELAY_TO_POST;
 
-    private Boolean isRandomBreakBatch = false;
+    private Integer timeDelayFillContent = Constant.TIME_DELAY_TO_POST;
 
-    private Boolean isRandomTimePost = false;
+    private Integer timeDelayFillFile = Constant.TIME_DELAY_TO_POST;
 
-    private Boolean isScheduler = false;
+    private Integer timeDelayPost = Constant.TIME_DELAY_TO_POST;
 
-    @Builder.Default
-    private Boolean isSpecialFrameHours = false;
+    private Integer timeDelayOpenNewTab = Constant.TIME_DELAY_TO_POST;
 
-    @Convert(converter = StringListConverter.class)
-    @Column(columnDefinition = "TEXT")
-    private List<String> strictlyMatchTitleGroups = Constant.STRICTLY_TITLE_MATCH_GROUPS;
+    private Long lastTimePost;
 
-    private Boolean isCommentWhenPost = false;
-    private Boolean isInteractBatch = false;
+    private Boolean isShuffleGroupNeedPost = true;
 
-    private Boolean isStopTask = false;
+    private Boolean isSpammed = false;
 
 
     @ManyToOne
