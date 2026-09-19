@@ -203,6 +203,17 @@ public class DeviceController {
 
     }
 
+    @PatchMapping("/settings/{device_id}/update-priority-task")
+    public ResponseEntity<ApiResponse<PriorityTask>> updatePriorityTask(@PathVariable String device_id, @Valid @RequestBody PriorityTask priorityTaskRequest) {
+
+        String userId = authService.getUserIdFromContext();
+
+        PriorityTask priorityTask = deviceService.updatePriorityTask(userId, device_id, priorityTaskRequest);
+
+        return ApiResponse.success(200, "Update priority task success", priorityTask);
+
+    }
+
     //maybe dont need
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteDevice(@PathVariable String id) {

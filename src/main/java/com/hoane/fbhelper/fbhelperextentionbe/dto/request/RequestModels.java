@@ -33,6 +33,13 @@ public class RequestModels {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record CommentWalkImportRequest(
+            List<CommentWalkRequest.BaseRequest> listCommentWalk,
+            String deviceId
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record ChangeStatusTool(
             @NotNull(message = "Is stop task can not null or empty") Boolean isStopTask
     ) {

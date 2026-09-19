@@ -22,6 +22,15 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        resolver.resolveException(request, response, null, authException);
+        System.out.println("CustomAuthenticationEntryPoint: commence called: " + authException.toString());
+        Throwable cause = authException.getCause();
+        Exception exceptionToResolve = (cause instanceof Exception) ? (Exception) cause : authException;
+
+        // Nếu trong request attribute có cất lỗi từ JwtFilter thì lấy ra
+        if (request.getAttribute("exception") != null) {
+            exceptionToResolve = (Exception) request.getAttribute("exception");
+        }
+
+        resolver.resolveException(request, response, null, exceptionToResolve);
     }
 }

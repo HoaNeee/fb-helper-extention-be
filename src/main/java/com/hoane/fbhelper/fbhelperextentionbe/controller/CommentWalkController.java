@@ -3,6 +3,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.controller;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.CommentWalkRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostRequest;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnCreate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnUpdate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.CommentWalkResponse;
@@ -65,6 +66,27 @@ public class CommentWalkController {
         return ApiResponse.success(201, "Create comment walk successfully", new CommentWalkResponse.DataResponse(commentWalk));
     }
 
+    @PostMapping("/import-data")
+    public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> importDataGroupPosts(@RequestBody RequestModels.CommentWalkImportRequest request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        List<CommentWalk> commentWalks = commentWalkService.importCommentWalk(userId, request);
+        List<CommentWalkResponse.DataResponse> listResponse = commentWalks.stream().map(CommentWalkResponse.DataResponse::new).toList();
+
+        return ApiResponse.success(200, "Import comment walks successfully", listResponse);
+    }
+
+    @PostMapping("/sync-device-comment-walk")
+    public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> syncCommentWalkToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        List<CommentWalkResponse.DataResponse> result = commentWalkService.syncCommentWalkToDevice(userId, request);
+
+        return ApiResponse.success(200, "Sync comment walk to device successfully", result);
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<CommentWalkResponse.DataResponse>> updateCommentWalk(@PathVariable String id, @Validated(OnUpdate.class) @RequestBody CommentWalkRequest.BaseRequest request) {
 
@@ -81,6 +103,15 @@ public class CommentWalkController {
         return ApiResponse.success(200, "Update comment walk status successfully", new CommentWalkResponse.CommentWalkDetailResponse(commentWalkDetail));
     }
 
+    @PatchMapping("/update-status-all-device/{id}")
+    public ResponseEntity<ApiResponse<Void>> updateStatusCommentWalkAllDevice(@PathVariable String id, @Valid @RequestBody CommentWalkRequest.CommentWalkUpdateStatusAllDeviceRequest request) {
+
+        String userId = authService.getUserIdFromContext();
+
+        commentWalkService.updateStatusAllDevice(userId, id, request);
+        return ApiResponse.success(200, "Update status comment walk all device successfully", null);
+    }
+
     @DeleteMapping("/delete-all-comment-walks")
     public ResponseEntity<ApiResponse<Void>> deleteAllCommentWalksByUser() {
 
@@ -89,6 +120,14 @@ public class CommentWalkController {
         commentWalkService.deleteAll(userId);
 
         return ApiResponse.success(200, "Delete all comment walks by user successfully", null);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCommentWalk(@PathVariable String id) {
+
+        commentWalkService.delete(id);
+
+        return ApiResponse.success(200, "Delete data comment walk successfully", null);
     }
 
 }

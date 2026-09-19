@@ -182,6 +182,17 @@ public class DeviceService {
     }
 
     @Transactional
+    public PriorityTask updatePriorityTask(String userId, String device_id, PriorityTask priorityTaskRequest) {
+        DeviceSetting existingSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(device_id, userId);
+
+        existingSetting.setPriorityTaskPost(priorityTaskRequest.getPriorityTaskPost());
+        existingSetting.setPriorityTaskCommentWalk(priorityTaskRequest.getPriorityTaskCommentWalk());
+
+        deviceSettingRepository.save(existingSetting);
+        return priorityTaskRequest;
+    }
+
+    @Transactional
     public void updatePostConfig(String userId, PostConfigRequest postConfigRequest) {
         String device_id = postConfigRequest.getDeviceId();
         PostConfig existingPostConfig = findPostConfigByDeviceIdAndUserIdOrThrow(device_id, userId);

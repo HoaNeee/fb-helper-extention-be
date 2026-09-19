@@ -2,6 +2,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.request;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.PriorityTask;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,9 @@ public class DeviceSettingRequest {
     private Boolean isCommentWhenPost;
 
     private Boolean isInteractBatch;
-    
+
+    private Integer timeBreakWhenSpammed;
+
     private List<String> strictlyTitleMatchGroups;
 
 }

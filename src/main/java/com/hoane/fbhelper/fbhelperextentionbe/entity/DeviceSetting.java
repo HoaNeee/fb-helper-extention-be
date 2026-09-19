@@ -45,10 +45,17 @@ public class DeviceSetting {
     private List<String> strictlyMatchTitleGroups = Constant.STRICTLY_TITLE_MATCH_GROUPS;
 
     private Boolean isCommentWhenPost = false;
+
     private Boolean isInteractBatch = false;
 
     private Boolean isStopTask = false;
 
+    private Integer timeBreakWhenSpammed = Constant.TIME_BREAK_WHEN_SPAMMED;
+
+
+    private Integer priorityTaskPost = Constant.PRIORITY_TASK_POST;
+
+    private Integer priorityTaskCommentWalk = Constant.PRIORITY_TASK_COMMENT_WALK;
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, updatable = false)

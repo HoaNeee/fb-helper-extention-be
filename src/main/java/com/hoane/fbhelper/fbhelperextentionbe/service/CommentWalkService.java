@@ -2,6 +2,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.CommentWalkRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostRequest;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.CommentWalkResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DataGroupPostResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentWalkService {
@@ -125,6 +127,71 @@ public class CommentWalkService {
     }
 
     @Transactional
+    public void updateStatusAllDevice(String userId, String commentWalkId, CommentWalkRequest.CommentWalkUpdateStatusAllDeviceRequest request) {
+
+        CommentWalk commentWalk = findCommentWalkByIdOrThrow(commentWalkId);
+
+        List<Device> devices = deviceService.findAllByUser(userId);
+
+        Boolean isActive = request.getIsActive();
+
+        devices.forEach(device -> {
+            CommentWalkDetail commentWalkDetail = findCommentWalkDetail(device.getId(), commentWalkId);
+            if (commentWalkDetail != null) {
+                commentWalkDetail.setIsActive(isActive);
+                commentWalkDetailRepository.save(commentWalkDetail);
+            } else {
+                commentWalkDetail = new CommentWalkDetail();
+                commentWalkDetail.setDevice(device);
+                commentWalkDetail.setCommentWalk(commentWalk);
+                commentWalkDetail.setIsActive(isActive);
+                commentWalkDetailRepository.save(commentWalkDetail);
+            }
+        });
+    }
+
+    @Transactional
+    public List<CommentWalk> importCommentWalk(String userId, RequestModels.CommentWalkImportRequest request) {
+
+        User u = userService.findByIdOrThrow(userId);
+
+        String deviceId = request.deviceId();
+
+        List<CommentWalkRequest.BaseRequest> listCommentWalk = request.listCommentWalk();
+        if (listCommentWalk != null) {
+            List<CommentWalk> commentWalkList = commentWalkRepository.saveAll(listCommentWalk.stream()
+                    .map(rq -> CommentWalk.builder()
+                            .id(IdGenerator.generateId(10))
+                            .name(rq.getName())
+                            .titleQuerySearchs(rq.getTitleQuerySearchs())
+                            .keywordsCertainChoice(rq.getKeywordsCertainChoice())
+                            .keywordQueryIncludes(rq.getKeywordQueryIncludes())
+                            .keywordQueryExcludes(rq.getKeywordQueryExcludes())
+                            .user(u)
+                            .contents(rq.getContents())
+                            .files(rq.getFiles())
+                            .descriptionForAi(rq.getDescriptionForAi())
+                            .matchRateValueContentQueryIncludes(rq.getMatchRateValueContentQueryIncludes())
+                            .build())
+                    .collect(Collectors.toList()));
+
+            if (deviceId != null) {
+                commentWalkDetailRepository.saveAll(commentWalkList.stream()
+                        .map(cw -> CommentWalkDetail.builder()
+                                .device(deviceService.findByIdOrThrow(deviceId))
+                                .commentWalk(cw)
+                                .isActive(false)
+                                .build())
+                        .collect(Collectors.toList()));
+            }
+
+            return commentWalkList;
+        }
+
+        return List.of();
+    }
+
+    @Transactional
     public void delete(String id) {
 
         commentWalkDetailRepository.deleteAllByCommentWalk_Id(id);
@@ -188,5 +255,51 @@ public class CommentWalkService {
         return commentWalkDetailRepository.findByDevice_IdAndCommentWalk_Id(device_id, comment_walk_id);
     }
 
+    @Transactional
+    public List<CommentWalkResponse.DataResponse> syncCommentWalkToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
+        String currentDeviceId = request.currentDeviceId();
+        String targetDeviceId = request.targetDeviceId();
+
+        Device currentDevice = deviceService.findByIdOrThrow(currentDeviceId);
+        Device targetDevice = deviceService.findByIdOrThrow(targetDeviceId);
+
+        List<CommentWalkDetail> targetCommentWalkDetails = commentWalkDetailRepository.findAllByDevice_IdAndUser_Id(targetDeviceId, userId);
+        List<CommentWalkDetail> commentWalkDetails = commentWalkDetailRepository.findAllByDevice_IdAndUser_Id(currentDeviceId, userId);
+
+        List<CommentWalk> commentWalkList = commentWalkRepository.findAllByUser_Id(userId);
+
+
+        commentWalkList.forEach(comment -> {
+            CommentWalkDetail targetDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(targetDeviceId, comment.getId(), targetCommentWalkDetails);
+            CommentWalkDetail existingDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(currentDeviceId, comment.getId(), commentWalkDetails);
+            if (targetDetail == null) {
+                targetDetail = new CommentWalkDetail();
+                targetDetail.setCommentWalk(comment);
+                targetDetail.setIsActive(false);
+                targetDetail.setDevice(targetDevice);
+                commentWalkDetailRepository.save(targetDetail);
+            }
+            if (existingDetail != null) {
+                existingDetail.setIsActive(targetDetail.getIsActive());
+                commentWalkDetailRepository.save(existingDetail);
+            } else {
+                existingDetail = new CommentWalkDetail();
+                existingDetail.setCommentWalk(comment);
+                existingDetail.setIsActive(targetDetail.getIsActive());
+                existingDetail.setDevice(currentDevice);
+                commentWalkDetailRepository.save(existingDetail);
+            }
+        });
+
+        return getListCommentWalkAndDetails(userId, currentDeviceId);
+    }
+
+
+    CommentWalkDetail findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(String deviceId, String commentWalkId, List<CommentWalkDetail> commentWalkDetails) {
+        return commentWalkDetails.stream()
+                .filter(cwd -> cwd.getCommentWalk().getId().equals(commentWalkId) && cwd.getDevice().getId().equals(deviceId))
+                .findFirst()
+                .orElse(null);
+    }
 
 }

@@ -2,7 +2,6 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.CommentWalkConfigRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentWalkConfig;
 import lombok.AllArgsConstructor;
@@ -27,7 +26,7 @@ public class CommentWalkConfigResponse {
 
     private Boolean isSkipPostNotInGroup;
 
-    private Boolean isCombineStrictlyTitleGroup;
+    private Boolean isCombineKeywordsTitleGroup;
 
     private Integer timeDelayFillContentCommentWalkMin;
 
@@ -37,15 +36,19 @@ public class CommentWalkConfigResponse {
 
     private Integer timeDelaySubmitCommentWalk;
 
-    private Integer maxRateValueContentQueryIncludesCommonCommentWalk;
+    private Integer matchRateValueContentQueryIncludesCommonCommentWalk;
 
     private String commentWalkArea;
+
+    private String commentWalkSpeed;
 
     private List<String> contentQueryIncludesCommonCommentWalk;
 
     private List<String> contentQueryExcludesCommonCommentWalk;
 
     private List<String> keywordsCertainChoiceCommentWalk;
+
+    private Boolean isAiHelpCommentWalk;
 
     private Long lastTimeCommentWalk;
 
@@ -55,17 +58,19 @@ public class CommentWalkConfigResponse {
         this.isSpammedCommentWalk = config.getIsSpammedCommentWalk();
         this.maxCommentWalkPerBatch = config.getMaxCommentWalkPerBatch();
         this.isSkipPostNotInGroup = config.getIsSkipPostNotInGroup();
-        this.isCombineStrictlyTitleGroup = config.getIsCombineStrictlyTitleGroup();
+        this.isCombineKeywordsTitleGroup = config.getIsCombineKeywordsTitleGroup();
         this.timeDelayFillContentCommentWalkMin = config.getTimeDelayFillContentCommentWalkMin();
         this.timeDelayFillContentCommentWalkMax = config.getTimeDelayFillContentCommentWalkMax();
         this.timeDelayFillFileCommentWalk = config.getTimeDelayFillFileCommentWalk();
         this.timeDelaySubmitCommentWalk = config.getTimeDelaySubmitCommentWalk();
-        this.maxRateValueContentQueryIncludesCommonCommentWalk = config.getMaxRateValueContentQueryIncludesCommonCommentWalk();
+        this.matchRateValueContentQueryIncludesCommonCommentWalk = config.getMatchRateValueContentQueryIncludesCommonCommentWalk();
         this.commentWalkArea = config.getCommentWalkArea();
         this.contentQueryIncludesCommonCommentWalk = config.getContentQueryIncludesCommonCommentWalk();
         this.contentQueryExcludesCommonCommentWalk = config.getContentQueryExcludesCommonCommentWalk();
         this.keywordsCertainChoiceCommentWalk = config.getKeywordsCertainChoiceCommentWalk();
         this.lastTimeCommentWalk = config.getLastTimeCommentWalk();
+        this.isAiHelpCommentWalk = config.getIsAiHelpCommentWalk();
+        this.commentWalkSpeed = config.getCommentWalkSpeed();
     }
 
     public CommentWalkConfigResponse(CommentWalkConfigRequest config) {
@@ -73,16 +78,18 @@ public class CommentWalkConfigResponse {
         this.isSpammedCommentWalk = config.getIsSpammedCommentWalk();
         this.maxCommentWalkPerBatch = config.getMaxCommentWalkPerBatch();
         this.isSkipPostNotInGroup = config.getIsSkipPostNotInGroup();
-        this.isCombineStrictlyTitleGroup = config.getIsCombineStrictlyTitleGroup();
+        this.isCombineKeywordsTitleGroup = config.getIsCombineKeywordsTitleGroup();
         this.timeDelayFillContentCommentWalkMin = config.getTimeDelayFillContentCommentWalkMin();
         this.timeDelayFillContentCommentWalkMax = config.getTimeDelayFillContentCommentWalkMax();
         this.timeDelayFillFileCommentWalk = config.getTimeDelayFillFileCommentWalk();
         this.timeDelaySubmitCommentWalk = config.getTimeDelaySubmitCommentWalk();
-        this.maxRateValueContentQueryIncludesCommonCommentWalk = config.getMaxRateValueContentQueryIncludesCommonCommentWalk();
+        this.matchRateValueContentQueryIncludesCommonCommentWalk = config.getMatchRateValueContentQueryIncludesCommonCommentWalk();
         this.commentWalkArea = config.getCommentWalkArea();
         this.contentQueryIncludesCommonCommentWalk = config.getContentQueryIncludesCommonCommentWalk();
         this.contentQueryExcludesCommonCommentWalk = config.getContentQueryExcludesCommonCommentWalk();
         this.keywordsCertainChoiceCommentWalk = config.getKeywordsCertainChoiceCommentWalk();
         this.lastTimeCommentWalk = config.getLastTimeCommentWalk();
+        this.isAiHelpCommentWalk = config.getIsAiHelpCommentWalk();
+        this.commentWalkSpeed = config.getCommentWalkSpeed();
     }
 }

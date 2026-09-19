@@ -43,6 +43,8 @@ public class CommentWalkRequest {
 
         private Integer matchRateValueContentQueryIncludes;
 
+        private String descriptionForAi;
+
         @Size(min = 8, message = "device_id must be at least 8 characters")
         private String deviceId;
 
@@ -62,6 +64,18 @@ public class CommentWalkRequest {
         @NotBlank(message = "device_id can not null")
         @Size(min = 8, message = "device_id must be at least 8 characters")
         private String deviceId;
+
+        @NotNull(message = "is_active can not null")
+        private Boolean isActive;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @ToString
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class CommentWalkUpdateStatusAllDeviceRequest {
 
         @NotNull(message = "is_active can not null")
         private Boolean isActive;

@@ -35,7 +35,7 @@ public class CommentWalkConfig {
 
     private Boolean isSkipPostNotInGroup = false;
 
-    private Boolean isCombineStrictlyTitleGroup = false;
+    private Boolean isCombineKeywordsTitleGroup = false;
 
     private Integer timeDelayFillContentCommentWalkMin = Constant.TIME_DELAY_FILL_CONTENT_COMMENT_WALK_MIN;
 
@@ -45,9 +45,13 @@ public class CommentWalkConfig {
 
     private Integer timeDelaySubmitCommentWalk = Constant.TIME_DELAY_SUBMIT_COMMENT_WALK;
 
-    private Integer maxRateValueContentQueryIncludesCommonCommentWalk = Constant.MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMON_COMMENT_WALK;
+    private Integer matchRateValueContentQueryIncludesCommonCommentWalk = Constant.MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMON_COMMENT_WALK;
 
     private String commentWalkArea = Constant.COMMENT_WALK_AREA;
+
+    private String commentWalkSpeed = Constant.COMMENT_WALK_SPEED;
+
+    private Boolean isAiHelpCommentWalk = false;
 
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")

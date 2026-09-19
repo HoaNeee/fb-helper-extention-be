@@ -31,7 +31,7 @@ public class CommentWalkConfigRequest {
 
     private Boolean isSkipPostNotInGroup;
 
-    private Boolean isCombineStrictlyTitleGroup;
+    private Boolean isCombineKeywordsTitleGroup;
 
     private Integer timeDelayFillContentCommentWalkMin;
 
@@ -41,15 +41,19 @@ public class CommentWalkConfigRequest {
 
     private Integer timeDelaySubmitCommentWalk;
 
-    private Integer maxRateValueContentQueryIncludesCommonCommentWalk;
+    private Integer matchRateValueContentQueryIncludesCommonCommentWalk;
 
     private String commentWalkArea;
+
+    private String commentWalkSpeed;
 
     private List<String> contentQueryIncludesCommonCommentWalk;
 
     private List<String> contentQueryExcludesCommonCommentWalk;
 
     private List<String> keywordsCertainChoiceCommentWalk;
+
+    private Boolean isAiHelpCommentWalk;
 
     private Long lastTimeCommentWalk;
 

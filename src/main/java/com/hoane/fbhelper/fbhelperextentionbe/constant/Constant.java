@@ -16,6 +16,7 @@ public class Constant {
     public static final int TIME_DEFAULT_SCHEDULER_HOURS = 1;
     public static final int MAX_LENGTH_FILE_NAME = 15;
 
+    public static final int TIME_BREAK_WHEN_SPAMMED = 2;
 
     public static final String JWT_SECRET = "THIS_IS_MY_JWT_SECRET_VERY_LONG_LONG";
     public static final long JWT_EXPIRATION = 1000 * 60 * 60 * 24; //1d
@@ -26,6 +27,9 @@ public class Constant {
     public static final List<String> KEYWORDS_CERTAIN_CHOICE_COMMENT_WALK = Utils.splitStringToList(DefaultValue.keywordsCertainChoiceCommentWalkStr);
 
     public static final String PATH_UPLOAD_DIR = System.getenv("PATH_UPLOAD_DIR");
+
+    public static final int PRIORITY_TASK_POST = 1;
+    public static final int PRIORITY_TASK_COMMENT_WALK = 2;
 
     //Data group post
     public static final int MAX_GROUP_PER_BATCH = 1;
@@ -41,4 +45,5 @@ public class Constant {
     public static final int MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMON_COMMENT_WALK = 2;
     public static final int MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMENT_WALK_RECOMMEND = 1;
     public static final String COMMENT_WALK_AREA = "RANDOM";
+    public static final String COMMENT_WALK_SPEED = "NORMAL";
 }

@@ -2,10 +2,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentWalkConfig;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.DeviceSetting;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.PostConfig;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,7 +27,11 @@ public class DeviceSettingResponse {
     private Boolean isCommentWhenPost;
     private Boolean isInteractBatch;
 
+    private Integer timeBreakWhenSpammed;
+
     private List<String> strictlyTitleMatchGroups;
+
+    private PriorityTask priorityTask;
 
     private PostConfigResponse postConfig;
 
@@ -42,15 +43,17 @@ public class DeviceSettingResponse {
         this.isInteractBatch = deviceSetting.getIsInteractBatch();
         this.isScheduler = deviceSetting.getIsScheduler();
         this.strictlyTitleMatchGroups = deviceSetting.getStrictlyMatchTitleGroups();
-
+        this.timeBreakWhenSpammed = deviceSetting.getTimeBreakWhenSpammed();
 
         this.isRandomBreakBatch = deviceSetting.getIsRandomBreakBatch();
         this.isRandomTimePost = deviceSetting.getIsRandomTimePost();
         this.isFixStealAllFocus = deviceSetting.getIsFixStealAllFocus();
         this.isSpecialFrameHours = deviceSetting.getIsSpecialFrameHours();
 
+        this.priorityTask = new PriorityTask(deviceSetting.getPriorityTaskPost(), deviceSetting.getPriorityTaskCommentWalk());
+
         this.postConfig = new PostConfigResponse(postConfig);
-        
+
         this.commentWalkConfig = new CommentWalkConfigResponse(commentWalkConfig);
     }
 
@@ -65,7 +68,10 @@ public class DeviceSettingResponse {
         this.isRandomTimePost = deviceSetting.getIsRandomTimePost();
         this.isScheduler = deviceSetting.getIsScheduler();
         this.isSpecialFrameHours = deviceSetting.getIsSpecialFrameHours();
+        this.timeBreakWhenSpammed = deviceSetting.getTimeBreakWhenSpammed();
         this.strictlyTitleMatchGroups = deviceSetting.getStrictlyMatchTitleGroups();
+
+        this.priorityTask = new PriorityTask(deviceSetting.getPriorityTaskPost(), deviceSetting.getPriorityTaskCommentWalk());
     }
 
 

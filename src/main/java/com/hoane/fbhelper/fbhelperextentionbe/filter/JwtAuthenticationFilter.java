@@ -5,12 +5,12 @@ import com.hoane.fbhelper.fbhelperextentionbe.exception.CustomAuthenticationEntr
 import com.hoane.fbhelper.fbhelperextentionbe.service.CustomUserDetailsService;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,10 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            authenticationEntryPoint.commence(request, response, new InsufficientAuthenticationException(e.getMessage()));
+            request.setAttribute("exception", e);
+            throw e;
+        } catch (SignatureException e) {
+            request.setAttribute("exception", e);
+            throw e;
         } catch (Exception e) {
-            authenticationEntryPoint.commence(request, response, new InsufficientAuthenticationException(e.getMessage()));
-
+            throw e;
         }
     }
 }

@@ -6,4 +6,5 @@ public enum ApiResponseCode {
     INVALID_CREDENTIALS,
     FORBIDDEN,
     TOKEN_EXPIRED,
+    UNAUTHORIZED
 }

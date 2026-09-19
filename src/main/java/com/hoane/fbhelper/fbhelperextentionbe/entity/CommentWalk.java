@@ -52,9 +52,10 @@ public class CommentWalk {
     @Column(columnDefinition = "TEXT")
     private List<String> keywordsCertainChoice;
 
+    private String descriptionForAi;
+
     private Integer matchRateValueContentQueryIncludes;
-
-
+    
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

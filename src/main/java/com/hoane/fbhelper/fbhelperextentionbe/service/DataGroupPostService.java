@@ -3,10 +3,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DataGroupPostResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.Device;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceExistsException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DataGroupPostDetailRepository;
@@ -204,7 +201,6 @@ public class DataGroupPostService {
 
     public List<DataGroupPost> importDataGroupPost(String userId, RequestModels.DataGroupPostImportRequest request) {
 
-
         User u = userService.findByIdOrThrow(userId);
 
         String deviceId = request.deviceId();
@@ -252,14 +248,13 @@ public class DataGroupPostService {
             DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetail(device.getId(), dataGroupPostId);
             if (dataGroupPostDetail != null) {
                 dataGroupPostDetail.setIsActive(isActive);
-                dataGroupPostDetailRepository.save(dataGroupPostDetail);
             } else {
                 dataGroupPostDetail = new DataGroupPostDetail();
                 dataGroupPostDetail.setDevice(device);
                 dataGroupPostDetail.setDataGroupPost(dataGroupPost);
                 dataGroupPostDetail.setIsActive(isActive);
-                dataGroupPostDetailRepository.save(dataGroupPostDetail);
             }
+            dataGroupPostDetailRepository.save(dataGroupPostDetail);
         });
     }
 
@@ -269,26 +264,47 @@ public class DataGroupPostService {
         String targetDeviceId = request.targetDeviceId();
 
         Device currentDevice = deviceService.findByIdOrThrow(currentDeviceId);
+        Device targetDevice = deviceService.findByIdOrThrow(targetDeviceId);
 
-        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(targetDeviceId, userId);
+        List<DataGroupPostDetail> targetCommentWalkDetails = dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(targetDeviceId, userId);
+        List<DataGroupPostDetail> commentWalkDetails = dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(currentDeviceId, userId);
 
-        dataGroupPostDetails.forEach(dataGroupPostDetail -> {
-            String dataGroupPostId = dataGroupPostDetail.getDataGroupPost().getId();
-            DataGroupPostDetail currentDetail = dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(currentDeviceId, dataGroupPostId);
-            if (currentDetail != null) {
-                currentDetail.setIsActive(dataGroupPostDetail.getIsActive());
-                dataGroupPostDetailRepository.save(currentDetail);
+        List<DataGroupPost> dataGroupPostList = dataGroupPostRepository.findAllByUser_Id(userId);
+        
+        dataGroupPostList.forEach(dgp -> {
+            DataGroupPostDetail targetDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(targetDeviceId, dgp.getId(), targetCommentWalkDetails);
+            DataGroupPostDetail existingDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(currentDeviceId, dgp.getId(), commentWalkDetails);
+            if (targetDetail == null) {
+                targetDetail = new DataGroupPostDetail();
+                targetDetail.setDataGroupPost(dgp);
+                targetDetail.setIsActive(false);
+                targetDetail.setDevice(targetDevice);
+                dataGroupPostDetailRepository.save(targetDetail);
+            }
+            if (existingDetail != null) {
+                existingDetail.setIsActive(targetDetail.getIsActive());
+                dataGroupPostDetailRepository.save(existingDetail);
             } else {
-                currentDetail = new DataGroupPostDetail();
-                currentDetail.setIsActive(dataGroupPostDetail.getIsActive());
-                currentDetail.setDataGroupPost(findDataGroupPostByIdOrThrow(dataGroupPostId));
-                currentDetail.setDevice(currentDevice);
+                existingDetail = new DataGroupPostDetail();
+                existingDetail.setDataGroupPost(dgp);
+                existingDetail.setIsActive(targetDetail.getIsActive());
+                existingDetail.setDevice(currentDevice);
+                dataGroupPostDetailRepository.save(existingDetail);
             }
         });
+
         return getListDataGroupPostAndDetails(userId, currentDeviceId);
     }
 
     public Integer getMaxPriority(String userId) {
         return dataGroupPostRepository.getMaxPriorityByUser_Id(userId);
+    }
+
+
+    private DataGroupPostDetail findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(String deviceId, String dataGroupPostId, List<DataGroupPostDetail> list) {
+        return list.stream()
+                .filter(item -> item.getDataGroupPost().getId().equals(dataGroupPostId) && item.getDevice().getId().equals(deviceId))
+                .findFirst()
+                .orElse(null);
     }
 }
