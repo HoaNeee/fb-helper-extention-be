@@ -4,6 +4,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -20,15 +21,12 @@ import java.util.UUID;
 @Service
 public class FileService {
 
-    private final Path rootLocation = Paths.get(Constant.PATH_UPLOAD_DIR);
+    @Value("${app.upload.dir}")
+    private String UPLOAD_DIR;
 
-    public FileService() {
-        try {
-            Files.createDirectories(rootLocation);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not initialize storage", e);
-        }
-    }
+    private List<String> PREFIX_FILE_NAME = List.of("avt", "dgp", "cw");
+
+    private String ADD_FOR_FILE_NAME_STR = "_";
 
     public String storeFileHelper(MultipartFile file, HttpServletRequest request) throws IOException {
         try {
@@ -36,19 +34,25 @@ public class FileService {
                 throw new RuntimeException("File trống, không thể lưu trữ!");
             }
 
-            String fileName = file.getOriginalFilename();
+            String prefixFileName = getPrefixFileName(file.getOriginalFilename());
+
+            String fileName = getFileName(file.getOriginalFilename());
 
             String extension = getFileExtension(fileName);
+
 
             if (!fileName.isEmpty()) {
                 if (fileName.contains(".")) {
                     fileName = fileName.substring(0, fileName.lastIndexOf("."));
-                    fileName = fileName.replaceAll("[-_.]", "");
+                    fileName = fileName.replaceAll("[-._]", "");
                     if (fileName.length() > Constant.MAX_LENGTH_FILE_NAME) {
                         fileName = fileName.substring(0, Constant.MAX_LENGTH_FILE_NAME);
                     }
                 } else if (fileName.length() > Constant.MAX_LENGTH_FILE_NAME) {
-                    fileName = fileName.replaceAll("[-_.]", "");
+                    if (prefixFileName != null) {
+                        fileName = fileName.substring(prefixFileName.length() + 1);
+                    }
+                    fileName = fileName.replaceAll("[-._]", "");
                     fileName = fileName.substring(0, Constant.MAX_LENGTH_FILE_NAME);
                 }
             }
@@ -56,9 +60,13 @@ public class FileService {
 
             fileName = fileName + "_" + IdGenerator.generateId(10) + extension;
 
+            if (prefixFileName != null) {
+                fileName = prefixFileName + ADD_FOR_FILE_NAME_STR + fileName;
+            }
+
 
             // 2. Lưu file vật lý vào thư mục 'uploads'
-            Path destinationFile = this.rootLocation.resolve(Paths.get(fileName))
+            Path destinationFile = Paths.get(UPLOAD_DIR).resolve(Paths.get(fileName))
                     .normalize().toAbsolutePath();
 
             Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
@@ -105,5 +113,25 @@ public class FileService {
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) return "jpg";
         return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    private String getFileName(String fileName) {
+        String prefixFileName = getPrefixFileName(fileName);
+        if (prefixFileName != null) {
+            fileName = fileName.substring(prefixFileName.length() + 1);
+        }
+        fileName = fileName.replaceAll("\\s+", "-");
+        return fileName;
+    }
+
+    private String getPrefixFileName(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            for (String prefix : PREFIX_FILE_NAME) {
+                if (fileName.startsWith(prefix + ADD_FOR_FILE_NAME_STR)) {
+                    return prefix;
+                }
+            }
+        }
+        return null;
     }
 }

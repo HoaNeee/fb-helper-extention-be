@@ -15,6 +15,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.CommentWalkService;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +31,6 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
 public class CommentWalkController {
 
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private CommentWalkService commentWalkService;
@@ -39,7 +38,7 @@ public class CommentWalkController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CommentWalk>>> getCommentWalks() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<CommentWalk> res = commentWalkService.findAllByUser(userId).stream().peek(commentWalk -> commentWalk.setUser(null)).toList();
 
@@ -49,17 +48,35 @@ public class CommentWalkController {
     @GetMapping("/device/{device_id}")
     public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> getCommentWalkByDevice(@PathVariable String device_id) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<CommentWalkResponse.DataResponse> list = commentWalkService.getListCommentWalkAndDetails(userId, device_id);
 
         return ApiResponse.success(200, "Get list data comment walk for device successfully", list);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CommentWalkResponse.DataResponse>> getCommentWalkById(@PathVariable String id) {
+
+        CommentWalk commentWalk = commentWalkService.findCommentWalkByIdOrThrow(id);
+
+        return ApiResponse.success(200, "Get comment walk successfully", new CommentWalkResponse.DataResponse(commentWalk));
+    }
+
+    @GetMapping("/list-id-comment-walk-active/{deviceId}")
+    public ResponseEntity<ApiResponse<List<String>>> getListIdCommentWalkActive(@PathVariable String deviceId) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        List<String> list = commentWalkService.getListIdCommentWalkActive(userId, deviceId);
+
+        return ApiResponse.success(200, "Get list comment walk active successfully", list);
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<CommentWalkResponse.DataResponse>> createCommentWalk(@Validated(OnCreate.class) @RequestBody CommentWalkRequest.BaseRequest request) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         CommentWalk commentWalk = commentWalkService.createCommentWalk(request, user_id);
 
@@ -69,7 +86,7 @@ public class CommentWalkController {
     @PostMapping("/import-data")
     public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> importDataGroupPosts(@RequestBody RequestModels.CommentWalkImportRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<CommentWalk> commentWalks = commentWalkService.importCommentWalk(userId, request);
         List<CommentWalkResponse.DataResponse> listResponse = commentWalks.stream().map(CommentWalkResponse.DataResponse::new).toList();
@@ -80,7 +97,7 @@ public class CommentWalkController {
     @PostMapping("/sync-device-comment-walk")
     public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> syncCommentWalkToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<CommentWalkResponse.DataResponse> result = commentWalkService.syncCommentWalkToDevice(userId, request);
 
@@ -106,7 +123,7 @@ public class CommentWalkController {
     @PatchMapping("/update-status-all-device/{id}")
     public ResponseEntity<ApiResponse<Void>> updateStatusCommentWalkAllDevice(@PathVariable String id, @Valid @RequestBody CommentWalkRequest.CommentWalkUpdateStatusAllDeviceRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         commentWalkService.updateStatusAllDevice(userId, id, request);
         return ApiResponse.success(200, "Update status comment walk all device successfully", null);
@@ -115,7 +132,7 @@ public class CommentWalkController {
     @DeleteMapping("/delete-all-comment-walks")
     public ResponseEntity<ApiResponse<Void>> deleteAllCommentWalksByUser() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         commentWalkService.deleteAll(userId);
 

@@ -2,11 +2,14 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.LoginRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RegisterRequest;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.LoginResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.RegisterResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.UserExistException;
+import com.hoane.fbhelper.fbhelperextentionbe.exception.UserNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.UserRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +28,6 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -36,11 +36,12 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private CommentPostService commentPostService;
+
+    @Autowired
+    private IpAddressService ipAddressService;
 
     @Autowired
     private InteractBeforePostService interactBeforePostService;
@@ -62,7 +63,7 @@ public class AuthService {
         return new RegisterResponse(saved.getUsername(), saved.getEmail(), saved.getStatus());
     }
 
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, String ipAddress) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
 
@@ -70,34 +71,55 @@ public class AuthService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        if (userDetails.getIsNewUser()) {
+        if (userDetails == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        if (userDetails.getIsNewUser() && (userDetails.getRole().equals(Role.ROLE_USER) || userDetails.getRole().equals(Role.ROLE_ADMIN))) {
             handleForNewUser(userDetails.getId());
         }
 
+        if (ipAddress != null) {
+            ipAddressService.findByIpAddressOrCreate(ipAddress);
+        }
+
         String token = jwtUtils.generateToken(authentication);
-        return new LoginResponse(token, userDetails.getId(), userDetails.getUsername(), userDetails.getRole(), userDetails.getUserStatus());
+
+        LoginResponse response = new LoginResponse(token, userDetails.getId(), userDetails.getUsername(), userDetails.getUserStatus());
+
+        if (userDetails.isAdmin()) {
+            response.setRole(userDetails.getRole());
+        }
+
+        return response;
     }
 
-    public String getUserIdFromContext() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof CustomUserDetails) {
-                return ((CustomUserDetails) principal).getId();
+
+    public boolean verifyToken(RequestModels.VerifyTokenRequest request, String ipAddress) {
+        String token = request.token();
+        if (token == null || token.isEmpty()) return false;
+        try {
+            jwtUtils.validateJwtToken(token);
+
+            if (ipAddress != null) {
+                ipAddressService.findByIpAddressOrCreate(ipAddress);
             }
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-        return null;
     }
+
 
     public void handleForNewUser(String userId) {
-        User user = userService.findByIdOrThrow(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (!user.getIsNewUser()) {
+        if (!user.getIsNewUser() || user.isRole(Role.ROLE_SUPER_ADMIN)) {
             return;
         }
 
-        commentPostService.createNewCommentPostForUser(user.getId());
-        interactBeforePostService.createInteractBeforePostForUser(user.getId());
+        commentPostService.createNewCommentPostForUser(userId);
+        interactBeforePostService.createInteractBeforePostForUser(userId);
 
         user.setIsNewUser(false);
         userRepository.save(user);

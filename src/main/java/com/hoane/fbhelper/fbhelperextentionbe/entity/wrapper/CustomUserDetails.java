@@ -52,6 +52,19 @@ public class CustomUserDetails implements UserDetails {
         return !this.user.isStatus(UserStatus.LOCKED);
     }
 
+    public boolean isAdmin() {
+        return this.user.isRole(Role.ROLE_ADMIN) || this.isSuperAdmin();
+    }
+
+    public boolean isSuperAdmin() {
+        return this.user.isRole(Role.ROLE_SUPER_ADMIN);
+    }
+
+    public boolean isMember() {
+        return this.user.isMember() || this.isAdmin() || this.isSuperAdmin();
+    }
+    
+
     public String getId() {
         return this.user.getId();
     }

@@ -51,6 +51,8 @@ public class CommentWalkConfig {
 
     private String commentWalkSpeed = Constant.COMMENT_WALK_SPEED;
 
+    private Boolean isInteractBeforeCommentWalk = false;
+
     private Boolean isAiHelpCommentWalk = false;
 
     @Convert(converter = StringListConverter.class)

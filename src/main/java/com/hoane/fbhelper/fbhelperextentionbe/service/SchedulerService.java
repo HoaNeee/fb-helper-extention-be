@@ -35,7 +35,7 @@ public class SchedulerService {
         return schedulerRepository.findByDevice_IdAndUser_Id(deviceId, userId);
     }
 
-    public Scheduler findSchedulerByDeviceIdOrThrow(String deviceId, String userId) {
+    public Scheduler findSchedulerByDeviceIdAndUserIdOrThrow(String deviceId, String userId) {
         Scheduler scheduler = schedulerRepository.findByDevice_IdAndUser_Id(deviceId, userId);
         if (scheduler == null) {
             throw new ResourceNotFoundException("scheduler", "scheduler not found");
@@ -108,7 +108,7 @@ public class SchedulerService {
 //            throw new RuntimeException("Cannot update scheduler with type DAILY_HOURS");
 //        }
 
-        Scheduler scheduler = findSchedulerByDeviceIdOrThrow(device_id, userId);
+        Scheduler scheduler = findSchedulerByDeviceIdAndUserIdOrThrow(device_id, userId);
         scheduler.setSchedulerType(type);
 
         Integer scheduler_time_value = schedulerRequest.getSchedulerTimeValue();
@@ -133,7 +133,7 @@ public class SchedulerService {
 
     @Transactional
     public SchedulerDetail changeTypeScheduler(String device_id, String userId, SchedulerType schedulerType) {
-        Scheduler scheduler = findSchedulerByDeviceIdOrThrow(device_id, userId);
+        Scheduler scheduler = findSchedulerByDeviceIdAndUserIdOrThrow(device_id, userId);
         scheduler.setSchedulerType(schedulerType);
         schedulerRepository.save(scheduler);
 

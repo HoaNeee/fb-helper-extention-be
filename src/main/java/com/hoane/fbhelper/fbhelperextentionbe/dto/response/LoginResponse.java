@@ -10,7 +10,6 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -18,6 +17,19 @@ public class LoginResponse {
     private String token;
     private String userId;
     private String username;
-    private Role role;
     private UserStatus status;
+
+    private Role role;
+
+    public LoginResponse(String token, String userId, String username, UserStatus status) {
+        this.token = token;
+        this.userId = userId;
+        this.username = username;
+        this.status = status;
+    }
+
+    public LoginResponse(String token, String userId, String username, UserStatus status, Role role) {
+        this(token, userId, username, status);
+        this.role = role;
+    }
 }

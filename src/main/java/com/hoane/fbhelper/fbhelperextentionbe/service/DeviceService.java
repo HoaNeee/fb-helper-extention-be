@@ -1,14 +1,17 @@
 package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.*;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceSettingResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.CommentWalkConfigRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceSettingRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.PostConfigRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
@@ -39,8 +42,32 @@ public class DeviceService {
     @Autowired
     private ModelMapper modelMapper;
 
+
     public List<Device> findAllByUser(String userId) {
-        return deviceRepository.findAllByUser_Id(userId);
+        List<Device> list = deviceRepository.findAllByUser_Id(userId);
+
+        return list;
+    }
+
+    public Boolean isUserExistDevice(String deviceId, String userId) {
+        return deviceSettingRepository.findByDevice_IdAndUser_id(deviceId, userId) != null;
+    }
+
+    public List<DeviceResponse> findAllByUserWithDeviceSetting(String userId) {
+        List<Device> list = deviceRepository.findAllByUser_Id(userId);
+        List<DeviceSetting> deviceSettingList = deviceSettingRepository.findAllByUser_Id(userId);
+
+        List<DeviceResponse> deviceResponseList = list.stream().map(d -> {
+            DeviceResponse deviceResponse = new DeviceResponse(d);
+
+            DeviceSetting existed = deviceSettingList.stream().filter(ds -> ds.getDevice().getId().equals(d.getId())).findFirst().orElse(null);
+            if (existed != null) {
+                deviceResponse.setDeviceSetting(new DeviceSettingResponse(existed));
+            }
+
+            return deviceResponse;
+        }).toList();
+        return deviceResponseList;
     }
 
     public Device findByIdOrThrow(String id) {
@@ -50,7 +77,7 @@ public class DeviceService {
     }
 
     @Transactional
-    public DeviceSetting findDeviceSettingByDeviceIdAndUserId(String deviceId, String userId) {
+    public DeviceSetting getOrCreateDeviceSettingByDeviceIdAndUserId(String deviceId, String userId) {
         DeviceSetting deviceSetting = deviceSettingRepository.findByDevice_IdAndUser_id(deviceId, userId);
         if (deviceSetting == null) {
             deviceSetting = createDeviceSetting(deviceId, userId);
@@ -62,6 +89,12 @@ public class DeviceService {
     @Transactional
     public PostConfig findPostConfigByDeviceIdAndUserId(String deviceId, String userId) {
         PostConfig postConfig = postConfigRepository.findByDevice_IdAndUser_Id(deviceId, userId);
+        return postConfig;
+    }
+
+    @Transactional
+    public PostConfig getOrCreatePostConfigByDeviceIdAndUserId(String deviceId, String userId) {
+        PostConfig postConfig = postConfigRepository.findByDevice_IdAndUser_Id(deviceId, userId);
         if (postConfig == null) {
             postConfig = createNewPostConfig(deviceId, userId);
         }
@@ -71,13 +104,18 @@ public class DeviceService {
     @Transactional
     public CommentWalkConfig findCommentWalkConfigByDeviceIdAndUserId(String deviceId, String userId) {
         CommentWalkConfig commentWalkConfig = commentWalkConfigRepository.findByDevice_IdAndUser_Id(deviceId, userId);
+        return commentWalkConfig;
+    }
+
+    @Transactional
+    public CommentWalkConfig getOrCreateCommentWalkConfigByDeviceIdAndUserId(String deviceId, String userId) {
+        CommentWalkConfig commentWalkConfig = commentWalkConfigRepository.findByDevice_IdAndUser_Id(deviceId, userId);
         if (commentWalkConfig == null) {
             commentWalkConfig = createNewCommentWalkConfig(deviceId, userId);
         }
         return commentWalkConfig;
     }
 
-    @Transactional
     public DeviceSetting findDeviceSettingByDeviceIdAndUserIdOrThrow(String device_id, String user_id) {
         DeviceSetting deviceSetting = deviceSettingRepository.findByDevice_IdAndUser_id(device_id, user_id);
         if (deviceSetting == null) {
@@ -108,14 +146,14 @@ public class DeviceService {
 
         User user = userService.findByIdOrThrow(user_id);
 
-        DeviceSetting deviceSetting = findDeviceSettingByDeviceIdAndUserId(device_id, user_id);
+        DeviceSetting deviceSetting = getOrCreateDeviceSettingByDeviceIdAndUserId(device_id, user_id);
 
-        PostConfig postConfig = findPostConfigByDeviceIdAndUserId(device_id, user_id);
+        PostConfig postConfig = getOrCreatePostConfigByDeviceIdAndUserId(device_id, user_id);
 
         CommentWalkConfig commentWalkConfig = null;
 
         if (user.isMember()) {
-            commentWalkConfig = findCommentWalkConfigByDeviceIdAndUserId(device_id, user_id);
+            commentWalkConfig = getOrCreateCommentWalkConfigByDeviceIdAndUserId(device_id, user_id);
         }
 
         return new DeviceSettingResponse(deviceSetting, postConfig, commentWalkConfig);
@@ -123,7 +161,7 @@ public class DeviceService {
 
 
     @Transactional
-    public Device createNewDevice(String userId, DeviceRequest deviceRequest) {
+    public Device createNewDevice(DeviceRequest deviceRequest, String userId) {
 
         String id = deviceRequest.getId();
 
@@ -139,7 +177,9 @@ public class DeviceService {
 
         Device deviceSaved = deviceRepository.save(device);
 
-        createDeviceSetting(deviceSaved.getId(), userId);
+        if (userId != null) {
+            createDeviceSetting(deviceSaved.getId(), userId);
+        }
 
         return deviceSaved;
     }
@@ -219,31 +259,73 @@ public class DeviceService {
     @Transactional
     public void changeStatusTool(String userId, String deviceId, RequestModels.ChangeStatusTool request) {
         DeviceSetting deviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(deviceId, userId);
+
         deviceSetting.setIsStopTask(request.isStopTask());
         deviceSettingRepository.save(deviceSetting);
     }
 
-    //maybe dont need
+    //maybe dont need or just for admin
     @Transactional
     public void deleteDevice(String id) {
-        //delete this device -> need do more something, need think this problem
+        //delete this device -> need to do more something, need think this problem
 
         Device device = findByIdOrThrow(id);
+        PostConfig postConfig = postConfigRepository.findByDevice_Id(id);
+        CommentWalkConfig commentWalkConfig = commentWalkConfigRepository.findByDevice_Id(id);
 
+        postConfigRepository.delete(postConfig);
+        commentWalkConfigRepository.delete(commentWalkConfig);
         deviceRepository.delete(device);
     }
 
     @Transactional
-    public DeviceSetting syncDeviceSetting(String userId, RequestModels.DeviceSyncDataRequest syncDataRequest) {
+    public DeviceSettingResponse syncDeviceSetting(String userId, RequestModels.DeviceSyncDataRequest syncDataRequest) {
         String currentDeviceId = syncDataRequest.currentDeviceId();
         String targetDeviceId = syncDataRequest.targetDeviceId();
 
         DeviceSetting targetDeviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(targetDeviceId, userId);
         DeviceSetting currentDeviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(currentDeviceId, userId);
 
+        if (targetDeviceSetting == null) {
+            targetDeviceSetting = new DeviceSetting();
+            targetDeviceSetting.setDevice(targetDeviceSetting.getDevice());
+            targetDeviceSetting.setUser(targetDeviceSetting.getUser());
+        }
+
+        PostConfig postConfig = null;
+        CommentWalkConfig commentWalkConfig = null;
+
+        PostConfig currentPostConfig = findPostConfigByDeviceIdAndUserId(currentDeviceId, userId);
+        if (currentPostConfig != null) {
+            PostConfig targetPostConfig = findPostConfigByDeviceIdAndUserId(targetDeviceId, userId);
+            if (targetPostConfig == null) {
+                targetPostConfig = new PostConfig();
+                targetPostConfig.setDevice(targetDeviceSetting.getDevice());
+                targetPostConfig.setUser(targetDeviceSetting.getUser());
+            }
+            BeanUtils.copyProperties(targetPostConfig, currentPostConfig, "id", "device", "user");
+            postConfig = postConfigRepository.save(currentPostConfig);
+        }
+
+        CommentWalkConfig currentCommentWalkConfig = findCommentWalkConfigByDeviceIdAndUserId(currentDeviceId, userId);
+
+        if (currentCommentWalkConfig != null) {
+            CommentWalkConfig targetCommentWalkConfig = findCommentWalkConfigByDeviceIdAndUserId(targetDeviceId, userId);
+            if (targetCommentWalkConfig == null) {
+                targetCommentWalkConfig = new CommentWalkConfig();
+                targetCommentWalkConfig.setDevice(targetDeviceSetting.getDevice());
+                targetCommentWalkConfig.setUser(targetDeviceSetting.getUser());
+            }
+            BeanUtils.copyProperties(targetCommentWalkConfig, currentCommentWalkConfig, "id", "device", "user");
+            commentWalkConfig = commentWalkConfigRepository.save(currentCommentWalkConfig);
+        }
+
         BeanUtils.copyProperties(targetDeviceSetting, currentDeviceSetting, "id", "device", "user");
 
-        return deviceSettingRepository.save(currentDeviceSetting);
+        DeviceSetting newDevicesetting = deviceSettingRepository.save(currentDeviceSetting);
+
+        DeviceSettingResponse response = new DeviceSettingResponse(newDevicesetting, postConfig, commentWalkConfig);
+        return response;
     }
 
 
@@ -301,6 +383,13 @@ public class DeviceService {
         return commentWalkConfigRepository.save(commentWalkConfig);
     }
 
+    @Transactional
+    public void updateStatusDevice(String id, DeviceStatus status) {
+        Device device = findByIdOrThrow(id);
+        device.setStatus(status);
+        deviceRepository.save(device);
+    }
+
     private boolean canUpdateSetting(DeviceSettingRequest request, User user) {
         if (!user.isMember()) {
             if (request.getIsRandomBreakBatch() != null && request.getIsRandomBreakBatch()) {
@@ -312,6 +401,19 @@ public class DeviceService {
             if (request.getIsFixStealAllFocus() != null && request.getIsFixStealAllFocus()) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    private boolean isUserActionAllowedOrThrow(String deviceId) {
+        String userId = SecurityContextUtils.getUserIdFromContext();
+        DeviceSetting deviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(deviceId, userId);
+        return isUserActionAllowedOrThrow(deviceSetting);
+    }
+
+    private boolean isUserActionAllowedOrThrow(DeviceSetting deviceSetting) {
+        if (deviceSetting == null) {
+            throw new AuthorizationDeniedException("User is not allowed to perform this action on device with id " + deviceSetting.getDevice().getId());
         }
         return true;
     }

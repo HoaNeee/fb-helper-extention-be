@@ -1,6 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.IpStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class Device {
     @Id
-    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(10)", updatable = false)
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(20)", updatable = false)
     private String id;
 
     @Column(columnDefinition = "NVARCHAR(100)")
@@ -27,6 +28,7 @@ public class Device {
     private String deviceType;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private DeviceStatus status = DeviceStatus.ACTIVE;
 
     @CreatedDate

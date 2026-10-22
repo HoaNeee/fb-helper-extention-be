@@ -35,7 +35,7 @@ public class SpecialFrameHourRequest {
 
         @NotNull(message = "apply_dates is required", groups = OnCreate.class)
         private List<Integer> applyDates;
-        
+
         @Size(min = 8, message = "device_id must be at least 8 characters", groups = OnCreate.class)
         private String deviceId;
 
@@ -50,6 +50,15 @@ public class SpecialFrameHourRequest {
         @Size(min = 8, message = "device_id must be at least 8 characters")
         private String deviceId;
 
+        @NotNull(message = "is_active is required")
+        private Boolean isActive;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UpdateStatusAllDeviceRequest {
         @NotNull(message = "is_active is required")
         private Boolean isActive;
     }

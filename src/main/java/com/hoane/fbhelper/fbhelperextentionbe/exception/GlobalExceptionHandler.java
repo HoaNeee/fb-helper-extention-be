@@ -5,6 +5,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.modelmapper.MappingException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import javax.security.auth.login.AccountLockedException;
 import java.util.HashMap;
@@ -30,7 +33,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<?>> handleExceptionMethodNotSupported(HttpRequestMethodNotSupportedException exception) {
 
-        return ApiResponse.fail(400, "Request is not supported", null);
+        return ApiResponse.fail(400, "Request is not supported");
+    }
+
+
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<ApiResponse<?>> handleNotFound(Exception ex) {
+        return ApiResponse.fail(404, "Endpoint not found");
+
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -74,13 +84,19 @@ public class GlobalExceptionHandler {
         Map<String, String> errs = new HashMap<>();
         errs.put(exception.getName(), exception.getMessage());
 
-        return ApiResponse.fail(404, "Resource not found", errs);
+        return ApiResponse.fail(404, "Resource not found", errs, ApiResponseCode.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<?>> handleConflict(ConflictException exception) {
+
+        return ApiResponse.fail(409, exception.getMessage());
     }
 
     @ExceptionHandler(UserExistException.class)
     public ResponseEntity<ApiResponse<?>> handleUserExist(UserExistException exception) {
 
-        return ApiResponse.fail(409, "User already exists", null);
+        return ApiResponse.fail(409, "User already exists");
     }
 
     @ExceptionHandler(ResourceExistsException.class)
@@ -89,15 +105,7 @@ public class GlobalExceptionHandler {
         errs.put(exception.getName(), exception.getMessage());
         return ApiResponse.fail(409, "Resource was exist", errs);
     }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleErrors(RuntimeException exception) {
-        Map<String, String> error = new HashMap<>();
-        error.put("server_error", exception.getMessage());
-
-        return ApiResponse.fail(500, "Server internal error", error);
-    }
-
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidationErrors(MethodArgumentNotValidException exception) {
         Map<String, String> errs = new HashMap<>();
@@ -139,5 +147,13 @@ public class GlobalExceptionHandler {
         String message = exception.getMessage();
         errs.put("error", message);
         return ApiResponse.fail(400, "Bad request", errs);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<?>> handleErrors(RuntimeException exception) {
+        Map<String, String> error = new HashMap<>();
+        error.put("server_error", exception.getMessage());
+
+        return ApiResponse.fail(500, "Server internal error", error);
     }
 }

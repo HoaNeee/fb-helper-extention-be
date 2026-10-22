@@ -5,7 +5,9 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.UserStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.*;
+import com.hoane.fbhelper.fbhelperextentionbe.service.GeoIpService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -64,15 +66,33 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private CommentWalkDetailRepository commentWalkDetailRepository;
 
-    private final Path rootLocation = Paths.get(Constant.PATH_UPLOAD_DIR);
+    @Autowired
+    private SystemSettingRepository systemSettingRepository;
+
+    @Autowired
+    private SystemToolSettingRepository systemToolSettingRepository;
+
+    @Autowired
+    private SystemPostSettingRepository systemPostSettingRepository;
+
+    @Autowired
+    private SystemCommentWalkSettingRepository systemCommentWalkSettingRepository;
+
+    @Autowired
+    private GeoIpService geoIpService;
+
+
+    @Value("${app.upload.dir}")
+    private String UPLOAD_DIR;
 
 
     @Override
     public void run(String... args) throws Exception {
 
+
         try {
-            FileSystemUtils.deleteRecursively(rootLocation.toFile());
-            Files.createDirectory(rootLocation);
+            FileSystemUtils.deleteRecursively(Paths.get(UPLOAD_DIR).toFile());
+            Files.createDirectory(Paths.get(UPLOAD_DIR));
         } catch (Exception e) {
             System.out.println("Could not delete uploads directory: " + e.getMessage());
         }
@@ -107,6 +127,7 @@ public class DataInitializer implements CommandLineRunner {
                 .username("user3")
                 .email("user3@gmail.com")
                 .status(UserStatus.ACTIVE)
+                .role(Role.ROLE_MEMBER)
                 .isNewUser(true)
                 .build();
 
@@ -249,5 +270,13 @@ public class DataInitializer implements CommandLineRunner {
         commentWalkDetailRepository.save(commentWalkDetail);
 
 
+        SystemSetting systemSetting = new SystemSetting();
+        SystemToolSetting systemToolSetting = new SystemToolSetting();
+        SystemPostSetting systemPostSetting = new SystemPostSetting();
+        SystemCommentWalkSetting systemCommentWalkSetting = new SystemCommentWalkSetting();
+        systemSettingRepository.save(systemSetting);
+        systemToolSettingRepository.save(systemToolSetting);
+        systemPostSettingRepository.save(systemPostSetting);
+        systemCommentWalkSettingRepository.save(systemCommentWalkSetting);
     }
 }

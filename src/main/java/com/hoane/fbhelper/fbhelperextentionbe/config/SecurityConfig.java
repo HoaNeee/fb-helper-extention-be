@@ -31,6 +31,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        String prefix = "/api/v1";
+
         http
                 .cors(cors -> cors.configurationSource(request -> {
                             CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -42,8 +45,15 @@ public class SecurityConfig {
                 )
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/uploads/**").permitAll()
+                        auth.requestMatchers(prefix + "/auth/**",
+                                        prefix + "/api-docs/**", prefix + "/docs/**",
+                                        "/swagger-ui/**", "/docs/**",
+                                        prefix + "/system-setting/**",
+                                        prefix + "/devices/**",
+                                        prefix + "/ip-addresses/**"
+                                ).permitAll()
+                                .requestMatchers("/uploads/**")
+                                .permitAll()
                                 .anyRequest().authenticated()
 
                 )

@@ -1,14 +1,12 @@
 package com.hoane.fbhelper.fbhelperextentionbe.utils;
 
-import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
-import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.LoginLocation;
+
 import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.apache.tomcat.util.bcel.Const;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -19,9 +17,14 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${app.jwt.expiration}")
+    private Long jwtExpired;
 
     public Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Constant.JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Authentication authentication) {
@@ -29,9 +32,8 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
-                .claim("role", userDetails.getRole())
                 .claim("status", userDetails.getUserStatus())
-                .expiration(new Date(System.currentTimeMillis() + Constant.JWT_EXPIRATION))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpired))
                 .signWith(this.getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -54,9 +56,9 @@ public class JwtUtils {
     }
 
     public boolean validateJwtToken(String token) {
-        Jwts.parser().verifyWith((SecretKey) getSigningKey()).build().parseSignedClaims(token);
+        Key key = this.getSigningKey();
+        Jwts.parser().verifyWith((SecretKey) key).build().parseSignedClaims(token);
         return true;
-
     }
 
 }

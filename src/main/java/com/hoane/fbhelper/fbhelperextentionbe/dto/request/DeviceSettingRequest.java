@@ -3,6 +3,8 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.PriorityTask;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -30,7 +32,7 @@ public class DeviceSettingRequest {
 
     private Boolean isRandomBreakBatch;
 
-    private Boolean isRandomTimePost;
+    private Boolean isRandomTimeTask;
 
     private Boolean isScheduler;
 
@@ -44,4 +46,11 @@ public class DeviceSettingRequest {
 
     private List<String> strictlyTitleMatchGroups;
 
+    private Boolean isExecutePriorityTask;
+
+    private Boolean isRemoteControl;
+
+    private Boolean isStopTask;
+
+    private DeviceSettingStatus status;
 }

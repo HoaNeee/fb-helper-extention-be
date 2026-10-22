@@ -26,7 +26,7 @@ public class Constant {
     public static final List<String> CONTENT_QUERY_EXCLUDES_COMMON_COMMENT_WALK = Utils.splitStringToList(DefaultValue.contentQueryExcludesCommonCommentWalkStr);
     public static final List<String> KEYWORDS_CERTAIN_CHOICE_COMMENT_WALK = Utils.splitStringToList(DefaultValue.keywordsCertainChoiceCommentWalkStr);
 
-    public static final String PATH_UPLOAD_DIR = System.getenv("PATH_UPLOAD_DIR");
+    public static final String PATH_UPLOAD_DIR = System.getenv("PATH_UPLOAD_DIR") != null ? System.getenv("PATH_UPLOAD_DIR") : "C:\\media\\fb-extention\\uploads";
 
     public static final int PRIORITY_TASK_POST = 1;
     public static final int PRIORITY_TASK_COMMENT_WALK = 2;
@@ -46,4 +46,22 @@ public class Constant {
     public static final int MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMENT_WALK_RECOMMEND = 1;
     public static final String COMMENT_WALK_AREA = "RANDOM";
     public static final String COMMENT_WALK_SPEED = "NORMAL";
+    
+    //setting
+    public static final String APP_NAME = "FB Tools Helper";
+    public static final String MAIL_SUPPORT = "nhhoa03@gmail.com";
+    public static final Integer DAY_FREE_PREMIUM = 5;
+    public static final Integer BREAK_PER_BATCH_PERCENT = 20;
+
+    public static final Integer PERCENT_REPLACE_VALUE = 5;
+
+    public static final String REPLACE_VALUE_PHONE = "0339005642";
+    public static final String REPLACE_VALUE_IMAGE = "tel:0339005642";
+
+    public static final List<String> URL_GET_LIST_GROUPS = List.of("https://www.facebook.com/groups/feed/?ref=group_browse");
+    public static final List<String> PATTERN_URL_POST_IN_GROUP = List.of("^https:\\/\\/www\\.facebook\\.com\\/groups\\/[a-zA-Z0-9.]+\\/?$");
+    public static final List<String> URL_COMMENT_WALK_SEARCHES = List.of("facebook.com/search/top");
+    public static final List<String> URL_COMMENT_WALK_HOMES = List.of("facebook.com");
+    public static final List<String> PATTERN_URL_POST_COMMENT_WALKS = List.of("^https:\\/\\/www\\.facebook\\.com\\/groups\\/[a-zA-Z0-9._-]+\\/permalink\\/[A-Za-z0-9_.-\\\\/]+(\\/?)$");
+
 }

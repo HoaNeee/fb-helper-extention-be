@@ -34,6 +34,7 @@ public class CommentPostService {
         User user = userService.findByIdOrThrow(userId);
 
         CommentPost existingCommentPost = commentPostRepository.findByUser_Id(userId);
+        
         if (existingCommentPost != null) {
             return existingCommentPost;
         }

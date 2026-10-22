@@ -7,8 +7,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.dto.request.InteractBeforePostRequ
 import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.InteractBeforePost;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.InteractBeforePostService;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,13 +22,11 @@ public class InteractBeforePostController {
     @Autowired
     private InteractBeforePostService interactBeforePostService;
 
-    @Autowired
-    private AuthService authService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<InteractBeforePost>> getInteractBeforePostByUser() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         InteractBeforePost interactBeforePost = interactBeforePostService.getInteractPostByUserOrThrow(userId);
         interactBeforePost.setUser(null);
@@ -38,7 +36,7 @@ public class InteractBeforePostController {
     @GetMapping("/max-post-interact-per-batch")
     public ResponseEntity<ApiResponse<Integer>> getMaxPostInteractPerBatch() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         InteractBeforePost interactBeforePost = interactBeforePostService.getInteractPostByUserOrThrow(userId);
         interactBeforePost.setUser(null);
@@ -48,7 +46,7 @@ public class InteractBeforePostController {
     @PostMapping
     public ResponseEntity<ApiResponse<InteractBeforePost>> createInteractBeforePostForUser() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         InteractBeforePost interactBeforePost = interactBeforePostService.createInteractBeforePostForUser(userId);
         interactBeforePost.setUser(null);
@@ -58,7 +56,7 @@ public class InteractBeforePostController {
     @PatchMapping
     public ResponseEntity<ApiResponse<InteractBeforePost>> updateCommentPostByUser(@RequestBody InteractBeforePostRequest interactBeforePostRequest) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         InteractBeforePost interactBeforePost = interactBeforePostService.updateInteractBeforePostByUser(userId, interactBeforePostRequest);
         interactBeforePost.setUser(null);

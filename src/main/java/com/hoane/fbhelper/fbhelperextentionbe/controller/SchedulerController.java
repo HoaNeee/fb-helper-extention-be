@@ -10,8 +10,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.SchedulerDetail;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.SchedulerTime;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.SchedulerService;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +31,11 @@ public class SchedulerController {
     @Autowired
     private SchedulerService schedulerService;
 
-    @Autowired
-    private AuthService authService;
 
     @GetMapping("/{device_id}")
     public ResponseEntity<ApiResponse<SchedulerResponse.SchedulerDeviceResponse>> getSchedulerByDeviceId(@PathVariable String device_id) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         Scheduler scheduler = schedulerService.getSchedulerByDeviceIdAndUserId(device_id, userId);
 
@@ -49,9 +47,9 @@ public class SchedulerController {
     @GetMapping("/details/{schedulerType}/{deviceId}")
     public ResponseEntity<ApiResponse<SchedulerDetail>> getSchedulerDetailByTypeAndDeviceId(@PathVariable SchedulerType schedulerType, @PathVariable String deviceId, @RequestParam(required = false) Map<String, String> params) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
-        Scheduler scheduler = schedulerService.findSchedulerByDeviceIdOrThrow(deviceId, userId);
+        Scheduler scheduler = schedulerService.findSchedulerByDeviceIdAndUserIdOrThrow(deviceId, userId);
 
         SchedulerDetail schedulerDetail = schedulerService.findSchedulerDetailBySchedulerIdAndType(scheduler.getId(), schedulerType);
         if (schedulerDetail != null) {
@@ -63,7 +61,7 @@ public class SchedulerController {
     @PostMapping
     public ResponseEntity<ApiResponse<Scheduler>> createNewScheduler(@Validated(OnCreate.class) @RequestBody SchedulerRequest schedulerRequest) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         Scheduler scheduler = schedulerService.createNewScheduler(schedulerRequest, userId);
 
@@ -72,7 +70,7 @@ public class SchedulerController {
 
     @PatchMapping("/change-type/{deviceId}")
     public ResponseEntity<ApiResponse<SchedulerDetail>> updateTypeScheduler(@PathVariable String deviceId, @Valid @RequestBody RequestModels.SchedulerChangeTypeRequest schedulerChangeTypeRequest) {
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
         SchedulerType type = schedulerChangeTypeRequest.schedulerType();
         SchedulerDetail schedulerDetail = schedulerService.changeTypeScheduler(deviceId, userId, type);
         schedulerDetail.setScheduler(null);
@@ -81,7 +79,7 @@ public class SchedulerController {
 
     @PatchMapping("/update/{deviceId}")
     public ResponseEntity<ApiResponse<SchedulerDetail>> updateScheduler(@PathVariable String deviceId, @Validated(OnUpdate.class) @RequestBody SchedulerRequest schedulerRequest) {
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
         SchedulerDetail schedulerDetail = schedulerService.updateScheduler(deviceId, userId, schedulerRequest);
         schedulerDetail.setScheduler(null);
 

@@ -9,9 +9,11 @@ import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundExceptio
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DataGroupPostDetailRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DataGroupPostRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -111,9 +113,9 @@ public class DataGroupPostService {
     @Transactional
     public DataGroupPostResponse.DataGroupResponse updateDataGroupPost(String id, DataGroupPostRequest.DataGroupRequest dataGroupPostRequest) {
 
-        DataGroupPost existingDataGroupPost = dataGroupPostRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("DataGroupPost", "Data group post not found"));
+        isUserAllowed(id);
 
+        DataGroupPost existingDataGroupPost = findDataGroupPostByIdOrThrow(id);
 
         modelMapper.map(dataGroupPostRequest, existingDataGroupPost);
 
@@ -124,6 +126,8 @@ public class DataGroupPostService {
 
     @Transactional
     public void delete(String id) {
+
+        isUserAllowed(id);
 
         dataGroupPostDetailRepository.deleteAllByDataGroupPost_Id(id);
 
@@ -240,6 +244,8 @@ public class DataGroupPostService {
 
         DataGroupPost dataGroupPost = findDataGroupPostByIdOrThrow(dataGroupPostId);
 
+        isUserAllowed(dataGroupPost);
+
         List<Device> devices = deviceService.findAllByUser(userId);
 
         Boolean isActive = dataGroupPostUpdateStatusAllDeviceRequest.getIsActive();
@@ -270,7 +276,7 @@ public class DataGroupPostService {
         List<DataGroupPostDetail> commentWalkDetails = dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(currentDeviceId, userId);
 
         List<DataGroupPost> dataGroupPostList = dataGroupPostRepository.findAllByUser_Id(userId);
-        
+
         dataGroupPostList.forEach(dgp -> {
             DataGroupPostDetail targetDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(targetDeviceId, dgp.getId(), targetCommentWalkDetails);
             DataGroupPostDetail existingDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(currentDeviceId, dgp.getId(), commentWalkDetails);
@@ -306,5 +312,22 @@ public class DataGroupPostService {
                 .filter(item -> item.getDataGroupPost().getId().equals(dataGroupPostId) && item.getDevice().getId().equals(deviceId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private Boolean isUserAllowed(String dataGroupPostId) {
+        return isUserAllowed(findDataGroupPostByIdOrThrow(dataGroupPostId));
+    }
+
+    private Boolean isUserAllowed(DataGroupPost dataGroupPost) {
+
+        if (SecurityContextUtils.isAdminRoleFromContext()) {
+            return true;
+        }
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+        if (!dataGroupPost.getUser().getId().equals(userId)) {
+            throw new AuthorizationDeniedException("Not Allowed");
+        }
+        return true;
     }
 }

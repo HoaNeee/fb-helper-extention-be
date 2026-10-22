@@ -11,9 +11,11 @@ import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundExceptio
 import com.hoane.fbhelper.fbhelperextentionbe.repository.CommentWalkDetailRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.CommentWalkRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
@@ -47,7 +49,11 @@ public class CommentWalkService {
     }
 
     public CommentWalk findCommentWalkByIdOrThrow(String commentWalkId) {
-        return commentWalkRepository.findById(commentWalkId).orElseThrow(() -> new ResourceNotFoundException("comment_walk", "Data comment walk not found"));
+        CommentWalk commentWalk = commentWalkRepository.findById(commentWalkId).orElseThrow(() -> new ResourceNotFoundException("comment_walk", "Data comment walk not found"));
+
+        isUserAllowed(commentWalk);
+
+        return commentWalk;
     }
 
     public List<CommentWalkResponse.DataResponse> getListCommentWalkAndDetails(String user_id, String device_id) {
@@ -119,6 +125,8 @@ public class CommentWalkService {
 
         CommentWalk existCommentWalk = findCommentWalkByIdOrThrow(id);
 
+        isUserAllowed(existCommentWalk);
+
         modelMapper.map(commentWalkRequest, existCommentWalk);
 
         commentWalkRepository.save(existCommentWalk);
@@ -130,6 +138,8 @@ public class CommentWalkService {
     public void updateStatusAllDevice(String userId, String commentWalkId, CommentWalkRequest.CommentWalkUpdateStatusAllDeviceRequest request) {
 
         CommentWalk commentWalk = findCommentWalkByIdOrThrow(commentWalkId);
+
+        isUserAllowed(commentWalk);
 
         List<Device> devices = deviceService.findAllByUser(userId);
 
@@ -194,6 +204,8 @@ public class CommentWalkService {
     @Transactional
     public void delete(String id) {
 
+        isUserAllowed(id);
+
         commentWalkDetailRepository.deleteAllByCommentWalk_Id(id);
 
         commentWalkRepository.delete(findCommentWalkByIdOrThrow(id));
@@ -235,7 +247,11 @@ public class CommentWalkService {
     @Transactional
     public CommentWalkDetail updateCommentWalkDetail(CommentWalkRequest.CommentWalkDetailRequest commentWalkDetailRequest) {
 
-        CommentWalkDetail commentWalkDetail = findCommentWalkDetail(commentWalkDetailRequest.getDeviceId(), commentWalkDetailRequest.getCommentWalkId());
+        String commentWalkId = commentWalkDetailRequest.getCommentWalkId();
+
+        isUserAllowed(commentWalkId);
+
+        CommentWalkDetail commentWalkDetail = findCommentWalkDetail(commentWalkId, commentWalkDetailRequest.getCommentWalkId());
 
         if (commentWalkDetail == null) {
             commentWalkDetail = CommentWalkDetail.builder()
@@ -294,12 +310,38 @@ public class CommentWalkService {
         return getListCommentWalkAndDetails(userId, currentDeviceId);
     }
 
+    public List<String> getListIdCommentWalkActive(String userId, String deviceId) {
+        List<CommentWalkDetail> commentWalkDetails = findAllDetailsByDeviceIdAndUserId(deviceId, userId);
+        List<String> list = commentWalkDetails.stream().filter(CommentWalkDetail::getIsActive).map(cwd -> cwd.getCommentWalk().getId()).toList();
+        return list;
+    }
+
 
     CommentWalkDetail findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(String deviceId, String commentWalkId, List<CommentWalkDetail> commentWalkDetails) {
         return commentWalkDetails.stream()
                 .filter(cwd -> cwd.getCommentWalk().getId().equals(commentWalkId) && cwd.getDevice().getId().equals(deviceId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private boolean isUserAllowed(String commentWalkId) {
+        CommentWalk commentWalk = findCommentWalkByIdOrThrow(commentWalkId);
+
+        return isUserAllowed(commentWalk);
+    }
+
+    private boolean isUserAllowed(CommentWalk commentWalk) {
+
+        if (SecurityContextUtils.isAdminRoleFromContext()) {
+            return true;
+        }
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+        if (!userId.equals(commentWalk.getUser().getId())) {
+            throw new AuthorizationDeniedException("Not Allowed");
+        }
+
+        return true;
     }
 
 }

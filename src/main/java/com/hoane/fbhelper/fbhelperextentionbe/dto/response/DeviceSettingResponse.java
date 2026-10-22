@@ -3,6 +3,8 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,11 +23,14 @@ public class DeviceSettingResponse {
     private Boolean isFixStealFocus;
     private Boolean isFixStealAllFocus;
     private Boolean isRandomBreakBatch;
-    private Boolean isRandomTimePost;
+    private Boolean isRandomTimeTask;
     private Boolean isScheduler;
     private Boolean isSpecialFrameHours;
     private Boolean isCommentWhenPost;
     private Boolean isInteractBatch;
+    private Boolean isStopTask;
+
+    private Boolean isExecutePriorityTask;
 
     private Integer timeBreakWhenSpammed;
 
@@ -37,26 +42,9 @@ public class DeviceSettingResponse {
 
     private CommentWalkConfigResponse commentWalkConfig;
 
-    public DeviceSettingResponse(DeviceSetting deviceSetting, PostConfig postConfig, CommentWalkConfig commentWalkConfig) {
-        this.isCommentWhenPost = deviceSetting.getIsCommentWhenPost();
-        this.isFixStealFocus = deviceSetting.getIsFixStealFocus();
-        this.isInteractBatch = deviceSetting.getIsInteractBatch();
-        this.isScheduler = deviceSetting.getIsScheduler();
-        this.strictlyTitleMatchGroups = deviceSetting.getStrictlyMatchTitleGroups();
-        this.timeBreakWhenSpammed = deviceSetting.getTimeBreakWhenSpammed();
+    private Boolean isRemoteControl;
 
-        this.isRandomBreakBatch = deviceSetting.getIsRandomBreakBatch();
-        this.isRandomTimePost = deviceSetting.getIsRandomTimePost();
-        this.isFixStealAllFocus = deviceSetting.getIsFixStealAllFocus();
-        this.isSpecialFrameHours = deviceSetting.getIsSpecialFrameHours();
-
-        this.priorityTask = new PriorityTask(deviceSetting.getPriorityTaskPost(), deviceSetting.getPriorityTaskCommentWalk());
-
-        this.postConfig = new PostConfigResponse(postConfig);
-
-        this.commentWalkConfig = new CommentWalkConfigResponse(commentWalkConfig);
-    }
-
+    private DeviceSettingStatus status;
 
     public DeviceSettingResponse(DeviceSetting deviceSetting) {
         this.isCommentWhenPost = deviceSetting.getIsCommentWhenPost();
@@ -65,13 +53,30 @@ public class DeviceSettingResponse {
 
         this.isFixStealAllFocus = deviceSetting.getIsFixStealAllFocus();
         this.isRandomBreakBatch = deviceSetting.getIsRandomBreakBatch();
-        this.isRandomTimePost = deviceSetting.getIsRandomTimePost();
+        this.isRandomTimeTask = deviceSetting.getIsRandomTimeTask();
         this.isScheduler = deviceSetting.getIsScheduler();
         this.isSpecialFrameHours = deviceSetting.getIsSpecialFrameHours();
         this.timeBreakWhenSpammed = deviceSetting.getTimeBreakWhenSpammed();
         this.strictlyTitleMatchGroups = deviceSetting.getStrictlyMatchTitleGroups();
+        this.isStopTask = deviceSetting.getIsStopTask();
+        this.isExecutePriorityTask = deviceSetting.getIsExecutePriorityTask();
+        this.isRemoteControl = deviceSetting.getIsRemoteControl();
+        this.status = deviceSetting.getStatus();
 
         this.priorityTask = new PriorityTask(deviceSetting.getPriorityTaskPost(), deviceSetting.getPriorityTaskCommentWalk());
+    }
+
+    public DeviceSettingResponse(DeviceSetting deviceSetting, PostConfig postConfig, CommentWalkConfig commentWalkConfig) {
+        this(deviceSetting);
+
+        if (postConfig != null) {
+            this.postConfig = new PostConfigResponse(postConfig);
+        }
+
+        if (commentWalkConfig != null) {
+            this.commentWalkConfig = new CommentWalkConfigResponse(commentWalkConfig);
+        }
+
     }
 
 

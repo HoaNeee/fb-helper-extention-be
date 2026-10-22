@@ -57,4 +57,6 @@ public class CommentWalkConfigRequest {
 
     private Long lastTimeCommentWalk;
 
+    private Boolean isInteractBeforeCommentWalk;
+
 }

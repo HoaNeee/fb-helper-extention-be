@@ -10,8 +10,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.DataGroupPostService;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +34,11 @@ public class DataGroupPostController {
     @Autowired
     private DataGroupPostService dataGroupPostService;
 
-    @Autowired
-    private AuthService authService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByUser() {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         List<DataGroupPostResponse.DataGroupResponse> dataGroupPosts = dataGroupPostService.findAllByUser(user_id).stream().map(DataGroupPostResponse.DataGroupResponse::new).toList();
 
@@ -50,7 +48,7 @@ public class DataGroupPostController {
     @GetMapping("/device/{device_id}")
     public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByDeviceId(@PathVariable String device_id) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPostService.getListDataGroupPostAndDetails(user_id, device_id);
 
@@ -60,7 +58,7 @@ public class DataGroupPostController {
     @GetMapping("/details/{device_id}")
     public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupPostDetailResponse>>> getDataGroupPostDetails(@PathVariable String device_id) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<DataGroupPostResponse.DataGroupPostDetailResponse> dataGroupPostDetails = dataGroupPostService.findAllDetailsByDeviceIdAndUserId(device_id, userId).stream()
                 .map(DataGroupPostResponse.DataGroupPostDetailResponse::new)
@@ -72,7 +70,7 @@ public class DataGroupPostController {
     @GetMapping("/get-max-priority")
     public ResponseEntity<ApiResponse<Integer>> getMaxPriority() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         Integer maxPriority = dataGroupPostService.getMaxPriority(userId);
         return ApiResponse.success(200, "Get max priority successfully", maxPriority);
@@ -81,7 +79,7 @@ public class DataGroupPostController {
     @PostMapping
     public ResponseEntity<ApiResponse<DataGroupPostResponse.DataGroupResponse>> createDataGroupPost(@Validated(OnCreate.class) @RequestBody DataGroupPostRequest.DataGroupRequest request) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         DataGroupPost dataGroupPost = dataGroupPostService.createDataGroupPost(request, user_id);
 
@@ -91,7 +89,7 @@ public class DataGroupPostController {
     @PostMapping("/details")
     public ResponseEntity<ApiResponse<DataGroupPostResponse.DataGroupPostDetailResponse>> createDataGroupPostDetail(@Valid @RequestBody DataGroupPostRequest.DataGroupPostDetailRequest request) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         DataGroupPostDetail dataGroupPostDetail = dataGroupPostService.createDataGroupPostDetail(user_id, request);
 
@@ -101,7 +99,7 @@ public class DataGroupPostController {
     @PostMapping("/import-data")
     public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> importDataGroupPosts(@RequestBody RequestModels.DataGroupPostImportRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<DataGroupPost> dataGroupPosts = dataGroupPostService.importDataGroupPost(userId, request);
         List<DataGroupPostResponse.DataGroupResponse> listResponse = dataGroupPosts.stream().map(DataGroupPostResponse.DataGroupResponse::new).toList();
@@ -110,13 +108,13 @@ public class DataGroupPostController {
     }
 
     @PostMapping("/sync-device-data-group-post")
-    public ResponseEntity<ApiResponse<Void>> syncDataGroupPostToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
+    public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> syncDataGroupPostToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         List<DataGroupPostResponse.DataGroupResponse> result = dataGroupPostService.syncDataGroupPostToDevice(userId, request);
 
-        return ApiResponse.success(200, "Sync data group post to device successfully", null);
+        return ApiResponse.success(200, "Sync data group post to device successfully", result);
     }
 
     @PatchMapping("/{id}")
@@ -130,7 +128,7 @@ public class DataGroupPostController {
     @PatchMapping("/update-status-all-device/{id}")
     public ResponseEntity<ApiResponse<Void>> updateStatusAllDevice(@PathVariable String id, @Valid @RequestBody DataGroupPostRequest.DataGroupPostUpdateStatusAllDeviceRequest request) {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         dataGroupPostService.updateStatusAllDevice(userId, id, request);
 
@@ -148,7 +146,7 @@ public class DataGroupPostController {
     @DeleteMapping("/delete-all-data-group-post")
     public ResponseEntity<ApiResponse<Void>> deleteAllDataGroupPost() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         dataGroupPostService.deleteAll(userId);
 

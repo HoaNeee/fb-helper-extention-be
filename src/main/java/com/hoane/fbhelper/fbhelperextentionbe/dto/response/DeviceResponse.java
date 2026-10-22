@@ -24,15 +24,17 @@ public class DeviceResponse {
 
     private String deviceType;
 
-    private DeviceStatus deviceStatus;
-
     private LocalDateTime createdAt;
+
+    private DeviceSettingResponse deviceSetting;
+
+    private DeviceStatus status;
 
     public DeviceResponse(Device device) {
         this.id = device.getId();
         this.deviceName = device.getDeviceName();
         this.deviceType = device.getDeviceType();
-        this.deviceStatus = device.getStatus();
         this.createdAt = device.getCreatedAt();
+        this.status = device.getStatus();
     }
 }

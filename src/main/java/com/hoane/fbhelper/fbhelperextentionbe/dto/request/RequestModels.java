@@ -1,5 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.dto.request;
 
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.IpStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,6 +44,25 @@ public class RequestModels {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record ChangeStatusTool(
             @NotNull(message = "Is stop task can not null or empty") Boolean isStopTask
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record VerifyTokenRequest(
+            @NotBlank(message = "Token can not null or empty") String token
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateStatusIpAddressRequest(
+            @NotBlank(message = "IP address can not null or empty") String ipAddress,
+            @NotNull(message = "Status can not null or empty") IpStatus status
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateStatusDeviceRequest(
+            @NotBlank(message = "Status can not null or empty") DeviceStatus status
     ) {
     }
 }

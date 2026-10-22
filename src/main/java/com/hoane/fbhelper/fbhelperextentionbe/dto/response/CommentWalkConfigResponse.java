@@ -52,6 +52,8 @@ public class CommentWalkConfigResponse {
 
     private Long lastTimeCommentWalk;
 
+    private Boolean isInteractBeforeCommentWalk;
+
     public CommentWalkConfigResponse(CommentWalkConfig config) {
         if (config == null) return;
         this.isCommentWalk = config.getIsCommentWalk();
@@ -71,6 +73,7 @@ public class CommentWalkConfigResponse {
         this.lastTimeCommentWalk = config.getLastTimeCommentWalk();
         this.isAiHelpCommentWalk = config.getIsAiHelpCommentWalk();
         this.commentWalkSpeed = config.getCommentWalkSpeed();
+        this.isInteractBeforeCommentWalk = config.getIsInteractBeforeCommentWalk();
     }
 
     public CommentWalkConfigResponse(CommentWalkConfigRequest config) {
@@ -91,5 +94,6 @@ public class CommentWalkConfigResponse {
         this.lastTimeCommentWalk = config.getLastTimeCommentWalk();
         this.isAiHelpCommentWalk = config.getIsAiHelpCommentWalk();
         this.commentWalkSpeed = config.getCommentWalkSpeed();
+        this.isInteractBeforeCommentWalk = config.getIsInteractBeforeCommentWalk();
     }
 }

@@ -2,6 +2,8 @@ package com.hoane.fbhelper.fbhelperextentionbe.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,7 +35,7 @@ public class DeviceSetting {
 
     private Boolean isRandomBreakBatch = false;
 
-    private Boolean isRandomTimePost = false;
+    private Boolean isRandomTimeTask = false;
 
     private Boolean isScheduler = false;
 
@@ -52,10 +54,17 @@ public class DeviceSetting {
 
     private Integer timeBreakWhenSpammed = Constant.TIME_BREAK_WHEN_SPAMMED;
 
+    private Boolean isExecutePriorityTask = false;
 
     private Integer priorityTaskPost = Constant.PRIORITY_TASK_POST;
 
     private Integer priorityTaskCommentWalk = Constant.PRIORITY_TASK_COMMENT_WALK;
+
+    private Boolean isRemoteControl = false;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private DeviceSettingStatus status = DeviceSettingStatus.ACTIVE;
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, updatable = false)

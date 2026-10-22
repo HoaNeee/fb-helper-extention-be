@@ -31,7 +31,4 @@ public class DeviceRequest {
 
     @Size(min = 1, message = "Device type can not null or empty", groups = OnUpdate.class)
     private String deviceType;
-
-    private DeviceStatus status;
-
 }

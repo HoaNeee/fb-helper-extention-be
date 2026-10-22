@@ -7,8 +7,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnUpdate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.SpecialFrameHourResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.SpecialFrameHour;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.service.AuthService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.SpecialFrameHourService;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,27 +20,26 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/special-frame-hours")
-@PreAuthorize("@authSecurityService.isMember()")
+@PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
 public class SpecialFrameHourController {
     @Autowired
     private SpecialFrameHourService specialFrameHourService;
 
-    @Autowired
-    private AuthService authService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SpecialFrameHour>>> getSpecialFrameHoursByUser() {
+    public ResponseEntity<ApiResponse<List<SpecialFrameHourResponse>>> getSpecialFrameHoursByUser() {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
-        List<SpecialFrameHour> specialFrameHours = specialFrameHourService.findAllSpecialFrameHoursByUserId(user_id);
+        List<SpecialFrameHourResponse> specialFrameHours = specialFrameHourService.findAllSpecialFrameHoursByUserId(user_id).stream().map(SpecialFrameHourResponse::new).toList();
+
         return ApiResponse.success(200, "Get list special frame hours success", specialFrameHours);
     }
 
     @GetMapping("/{device_id}")
     public ResponseEntity<ApiResponse<List<SpecialFrameHourResponse>>> getSpecialFrameHoursByDevice(@PathVariable String device_id) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         List<SpecialFrameHourResponse> specialFrameHours = specialFrameHourService.findAllSpecialFrameHoursByDeviceIdAndUserId(user_id, device_id);
 
@@ -50,7 +49,7 @@ public class SpecialFrameHourController {
     @PostMapping
     public ResponseEntity<ApiResponse<SpecialFrameHourResponse>> createSpecialFrameHour(@Validated(OnCreate.class) @RequestBody SpecialFrameHourRequest.SpecialRequest specialFrameRequest) {
 
-        String user_id = authService.getUserIdFromContext();
+        String user_id = SecurityContextUtils.getUserIdFromContext();
 
         SpecialFrameHour specialFrameHour = specialFrameHourService.createSpecialFrameHour(user_id, specialFrameRequest);
 
@@ -73,6 +72,14 @@ public class SpecialFrameHourController {
         return ApiResponse.success(200, "Update special frame hour status success", null);
     }
 
+    @PatchMapping("/update-status-all-device/{special_frame_hour_id}")
+    public ResponseEntity<ApiResponse<Void>> updateSpecialFrameHourStatusAllDevice(@PathVariable int special_frame_hour_id, @Valid @RequestBody SpecialFrameHourRequest.UpdateStatusAllDeviceRequest request) {
+
+        specialFrameHourService.updateStatusSpecialFrameHourAllDevice(special_frame_hour_id, request);
+
+        return ApiResponse.success(200, "Update special frame hour status  all device success", null);
+    }
+
     @DeleteMapping("/{special_frame_hour_id}")
     public ResponseEntity<ApiResponse<Void>> deleteSpecialFrameHour(@PathVariable int special_frame_hour_id) {
 
@@ -84,7 +91,7 @@ public class SpecialFrameHourController {
     @DeleteMapping("/delete-all")
     public ResponseEntity<ApiResponse<Void>> deleteAllSpecialFrameHours() {
 
-        String userId = authService.getUserIdFromContext();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         specialFrameHourService.clearAllSpecialFrameHour(userId);
         return ApiResponse.success(200, "Delete all special frame hours success", null);

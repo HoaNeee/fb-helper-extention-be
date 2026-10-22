@@ -86,6 +86,15 @@ public class ApiResponse<T> {
         return ResponseEntity.status(status).body(response);
     }
 
+    public static ResponseEntity<ApiResponse<?>> fail(int status, String message, ApiResponseCode code) {
+        ApiResponse<?> response = new ApiResponse<>();
+        response.setStatus(status);
+        response.setMessage(message);
+        response.setSuccess(false);
+        response.setCode(code);
+        return ResponseEntity.status(status).body(response);
+    }
+
     public static ResponseEntity<ApiResponse<?>> fail(int status, String message, Map<String, String> errors, ApiResponseCode code) {
         ApiResponse<?> response = new ApiResponse<>();
         response.setStatus(status);
