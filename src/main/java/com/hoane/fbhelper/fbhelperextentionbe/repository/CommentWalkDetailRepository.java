@@ -20,4 +20,8 @@ public interface CommentWalkDetailRepository extends JpaRepository<CommentWalkDe
     @Modifying
     @Query(value = "DELETE FROM comment_walk_details WHERE comment_walk_id IN (SELECT d.id FROM comment_walks d WHERE d.user_id = :userId)", nativeQuery = true)
     void deleteAllByUser_Id(String userId);
+
+    @Modifying
+    @Query(value = "SELECT d.* FROM comment_walk_details d WHERE d.comment_walk_id IN :ids", nativeQuery = true)
+    List<CommentWalkDetail> findAllByListCommentWalkId(List<String> ids);
 }

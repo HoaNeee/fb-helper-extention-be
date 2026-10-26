@@ -1,5 +1,6 @@
 package com.hoane.fbhelper.fbhelperextentionbe.dto.request;
 
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.IpStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.SchedulerType;
@@ -62,7 +63,16 @@ public class RequestModels {
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record UpdateStatusDeviceRequest(
-            @NotBlank(message = "Status can not null or empty") DeviceStatus status
+            @NotBlank(message = "Status can not null or empty") String status
     ) {
     }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateStatusDeviceSettingRequest(
+            @NotBlank(message = "Status can not null or empty") String status,
+            @NotBlank(message = "Device ID can not null or empty") String deviceId,
+            @NotBlank(message = "User ID can not null or empty") String userId
+    ) {
+    }
+
 }

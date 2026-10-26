@@ -23,12 +23,12 @@ public class DeviceResponse {
     private String deviceName;
 
     private String deviceType;
-
-    private LocalDateTime createdAt;
-
+    
     private DeviceSettingResponse deviceSetting;
 
     private DeviceStatus status;
+
+    private LocalDateTime createdAt;
 
     public DeviceResponse(Device device) {
         this.id = device.getId();

@@ -2,6 +2,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.config;
 
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.IpStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.UserStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.*;
@@ -79,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
     private SystemCommentWalkSettingRepository systemCommentWalkSettingRepository;
 
     @Autowired
-    private GeoIpService geoIpService;
+    private IpAddressRepository ipAddressRepository;
 
 
     @Value("${app.upload.dir}")
@@ -278,5 +279,14 @@ public class DataInitializer implements CommandLineRunner {
         systemToolSettingRepository.save(systemToolSetting);
         systemPostSettingRepository.save(systemPostSetting);
         systemCommentWalkSettingRepository.save(systemCommentWalkSetting);
+
+
+        IpAddress ipAddress = IpAddress.builder()
+                .id("192.101.102.103")
+                .status(IpStatus.ACTIVE)
+                .address("Hanoi, Vietnam")
+                .build();
+
+        ipAddressRepository.save(ipAddress);
     }
 }

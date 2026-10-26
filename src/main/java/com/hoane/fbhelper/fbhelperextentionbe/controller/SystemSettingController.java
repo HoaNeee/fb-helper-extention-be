@@ -44,34 +44,34 @@ public class SystemSettingController {
 
 
     @PatchMapping
-    @PreAuthorize("hasAllRoles('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("@userService.admin")
     public ResponseEntity<ApiResponse<SystemSetting>> updateSystemSetting(@RequestBody SystemSetting systemSetting) {
         // Implement the logic to update system setting here
-        systemSettingService.updateSystemSetting(systemSetting);
-        return ApiResponse.success(200, "Update system setting successfully", null);
+        SystemSetting setting = systemSettingService.updateSystemSetting(systemSetting);
+        return ApiResponse.success(200, "Update system setting successfully", setting);
     }
 
     @PatchMapping("/tool")
-    @PreAuthorize("hasAllRoles('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("@userService.admin")
     public ResponseEntity<ApiResponse<SystemToolSetting>> updateSystemToolSetting(@RequestBody SystemToolSetting systemToolSetting) {
         // Implement the logic to update system setting here
-        systemSettingService.updateSystemToolSetting(systemToolSetting);
-        return ApiResponse.success(200, "Update system tool setting successfully", null);
+        SystemToolSetting toolSetting = systemSettingService.updateSystemToolSetting(systemToolSetting);
+        return ApiResponse.success(200, "Update system tool setting successfully", toolSetting);
     }
 
     @PatchMapping("/post")
-    @PreAuthorize("hasAllRoles('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("@userService.admin")
     public ResponseEntity<ApiResponse<SystemPostSetting>> updateSystemPostSetting(@RequestBody SystemPostSetting systemPostSetting) {
         // Implement the logic to update system setting here
-        systemSettingService.updateSystemPostSetting(systemPostSetting);
-        return ApiResponse.success(200, "Update system post setting successfully", null);
+        SystemPostSetting postSetting = systemSettingService.updateSystemPostSetting(systemPostSetting);
+        return ApiResponse.success(200, "Update system post setting successfully", postSetting);
     }
 
     @PatchMapping("/comment-walk")
-    @PreAuthorize("hasAllRoles('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("@userService.admin")
     public ResponseEntity<ApiResponse<SystemCommentWalkSetting>> updateSystemCommentWalkSetting(@RequestBody SystemCommentWalkSetting systemCommentWalkSetting) {
         // Implement the logic to update system setting here
-        systemSettingService.updateSystemCommentWalkSetting(systemCommentWalkSetting);
-        return ApiResponse.success(200, "Update system comment walk setting successfully", null);
+        SystemCommentWalkSetting commentWalkSetting = systemSettingService.updateSystemCommentWalkSetting(systemCommentWalkSetting);
+        return ApiResponse.success(200, "Update system comment walk setting successfully", commentWalkSetting);
     }
 }

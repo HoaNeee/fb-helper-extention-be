@@ -4,7 +4,9 @@ public enum DeviceSettingStatus {
     ONLINE,
     OFFLINE,
     ACTIVE,
+    INACTIVE,
     RUNNING,
     PENDING,
-    SPAMMED
+    SPAMMED,
+
 }

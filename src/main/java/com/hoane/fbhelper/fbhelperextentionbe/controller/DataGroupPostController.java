@@ -1,13 +1,16 @@
 package com.hoane.fbhelper.fbhelperextentionbe.controller;
 
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.request.BasePageRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.DataGroupPostRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnCreate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnUpdate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DataGroupPostResponse;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.PageResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.Pagination;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.service.DataGroupPostService;
@@ -15,6 +18,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.validation.Valid;
 import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -36,23 +40,25 @@ public class DataGroupPostController {
 
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByUser() {
+    public ResponseEntity<PageResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByUser(@Valid @ModelAttribute BasePageRequest pageRequest, @RequestParam(required = false) String keyword) {
 
         String user_id = SecurityContextUtils.getUserIdFromContext();
 
-        List<DataGroupPostResponse.DataGroupResponse> dataGroupPosts = dataGroupPostService.findAllByUser(user_id).stream().map(DataGroupPostResponse.DataGroupResponse::new).toList();
+        Page<DataGroupPost> dataGroupPosts = dataGroupPostService.findAllByUser(user_id, pageRequest.toPageable(), keyword);
 
-        return ApiResponse.success(200, "Get list data group post successfully", dataGroupPosts);
+        Pagination pagination = new Pagination(dataGroupPosts.getNumber(), dataGroupPosts.getSize(), dataGroupPosts.getTotalElements(), dataGroupPosts.getTotalPages(), dataGroupPosts.hasNext());
+
+        return ResponseEntity.ok(new PageResponse<>(200, "Get list data group post successfully", true, dataGroupPosts.map(DataGroupPostResponse.DataGroupResponse::new).getContent(), pagination));
     }
 
     @GetMapping("/device/{device_id}")
-    public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByDeviceId(@PathVariable String device_id) {
+    public ResponseEntity<PageResponse<List<DataGroupPostResponse.DataGroupResponse>>> getDataGroupPostsByDeviceId(@PathVariable String device_id, @Valid @ModelAttribute BasePageRequest pageRequest, @RequestParam(required = false) String keyword) {
 
         String user_id = SecurityContextUtils.getUserIdFromContext();
 
-        List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPostService.getListDataGroupPostAndDetails(user_id, device_id);
+        DataGroupPostResponse.PageResponse pageResponse = dataGroupPostService.getListDataGroupPostAndDetails(user_id, device_id, pageRequest.toPageable(), keyword);
 
-        return ApiResponse.success(200, "Get list data group post successfully", list);
+        return ResponseEntity.ok(new PageResponse<>(200, "Get list data group post successfully", true, pageResponse.getData(), pageResponse.getPagination()));
     }
 
     @GetMapping("/details/{device_id}")
@@ -108,13 +114,13 @@ public class DataGroupPostController {
     }
 
     @PostMapping("/sync-device-data-group-post")
-    public ResponseEntity<ApiResponse<List<DataGroupPostResponse.DataGroupResponse>>> syncDataGroupPostToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
+    public ResponseEntity<ApiResponse<Boolean>> syncDataGroupPostToDevice(@Valid @RequestBody RequestModels.DeviceSyncDataRequest request) {
 
         String userId = SecurityContextUtils.getUserIdFromContext();
 
-        List<DataGroupPostResponse.DataGroupResponse> result = dataGroupPostService.syncDataGroupPostToDevice(userId, request);
+        Boolean success = dataGroupPostService.syncDataGroupPostToDevice(userId, request);
 
-        return ApiResponse.success(200, "Sync data group post to device successfully", result);
+        return ApiResponse.success(200, "Sync data group post to device successfully", success);
     }
 
     @PatchMapping("/{id}")

@@ -22,7 +22,6 @@ public class CommentPostController {
     @Autowired
     private CommentPostService commentPostService;
 
-
     @GetMapping
     public ResponseEntity<ApiResponse<CommentPost>> getCommentPostByUser() {
 
@@ -30,6 +29,7 @@ public class CommentPostController {
 
         CommentPost commentPost = commentPostService.getCommentPostByUserOrThrow(userId);
         commentPost.setUser(null);
+
         return ApiResponse.success(200, "Comment post retrieved successfully", commentPost);
     }
 

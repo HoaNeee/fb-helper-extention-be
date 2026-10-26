@@ -29,6 +29,12 @@ public class SecurityContextUtils {
         return null;
     }
 
+    public static Role getRoleFromContext() {
+        CustomUserDetails userDetails = getUserDetailsFromContext();
+        if (userDetails == null) return Role.ROLE_USER;
+        return userDetails.getRole();
+    }
+
     public static boolean isAdminRoleFromContext() {
         CustomUserDetails userDetails = getUserDetailsFromContext();
         if (userDetails == null) return false;

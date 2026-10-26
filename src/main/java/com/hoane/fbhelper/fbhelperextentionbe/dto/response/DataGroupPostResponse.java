@@ -3,6 +3,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPost;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.DataGroupPostDetail;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -66,5 +67,15 @@ public class DataGroupPostResponse {
             this.deviceId = dataGroupPostDetail.getDevice().getId();
             this.dataGroupPostId = dataGroupPostDetail.getDataGroupPost().getId();
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class PageResponse {
+        private List<DataGroupResponse> data;
+        private Pagination pagination;
     }
 }

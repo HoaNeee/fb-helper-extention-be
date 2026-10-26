@@ -15,6 +15,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
@@ -44,8 +46,17 @@ public class CommentWalkService {
         return commentWalkRepository.findAllByUser_Id(user_id);
     }
 
+    public Page<CommentWalk> findAllByUser(String user_id, Pageable pageable, String keyword) {
+
+        return commentWalkRepository.findAllByUser_Id(user_id, pageable, keyword);
+    }
+
     public List<CommentWalkDetail> findAllDetailsByDeviceIdAndUserId(String deviceId, String userId) {
         return commentWalkDetailRepository.findAllByDevice_IdAndUser_Id(deviceId, userId);
+    }
+
+    public List<CommentWalkDetail> findAllDetailsByListCommentWalkId(List<String> ids) {
+        return commentWalkDetailRepository.findAllByListCommentWalkId(ids);
     }
 
     public CommentWalk findCommentWalkByIdOrThrow(String commentWalkId) {
@@ -56,9 +67,13 @@ public class CommentWalkService {
         return commentWalk;
     }
 
-    public List<CommentWalkResponse.DataResponse> getListCommentWalkAndDetails(String user_id, String device_id) {
-        List<CommentWalk> commentWalks = findAllByUser(user_id);
-        List<CommentWalkDetail> commentWalkDetails = findAllDetailsByDeviceIdAndUserId(device_id, user_id);
+    public CommentWalkResponse.PageResponse getListCommentWalkAndDetails(String user_id, String device_id, Pageable pageable, String keyword) {
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+        Page<CommentWalk> commentWalkPage = findAllByUser(user_id, pageable, keyword);
+        List<CommentWalk> commentWalks = commentWalkPage.getContent();
+        List<String> ids = commentWalks.stream().map(CommentWalk::getId).toList();
+
+        List<CommentWalkDetail> commentWalkDetails = findAllDetailsByListCommentWalkId(ids);
 
         deviceService.findByIdOrThrow(device_id);
 
@@ -78,7 +93,9 @@ public class CommentWalkService {
                     return commentWalkResponse;
                 })
                 .toList();
-        return list;
+
+        Pagination pagination = new Pagination(commentWalkPage.getNumber(), commentWalkPage.getSize(), commentWalkPage.getTotalElements(), commentWalkPage.getTotalPages(), commentWalkPage.hasNext());
+        return new CommentWalkResponse.PageResponse(list, pagination);
     }
 
     @Transactional
@@ -272,7 +289,7 @@ public class CommentWalkService {
     }
 
     @Transactional
-    public List<CommentWalkResponse.DataResponse> syncCommentWalkToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
+    public Boolean syncCommentWalkToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
         String currentDeviceId = request.currentDeviceId();
         String targetDeviceId = request.targetDeviceId();
 
@@ -307,7 +324,7 @@ public class CommentWalkService {
             }
         });
 
-        return getListCommentWalkAndDetails(userId, currentDeviceId);
+        return true;
     }
 
     public List<String> getListIdCommentWalkActive(String userId, String deviceId) {

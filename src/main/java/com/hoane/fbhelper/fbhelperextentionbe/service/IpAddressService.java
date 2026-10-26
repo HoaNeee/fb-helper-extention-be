@@ -6,6 +6,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundExceptio
 import com.hoane.fbhelper.fbhelperextentionbe.repository.IpAddressRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +26,13 @@ public class IpAddressService {
         return ipAddressRepository.findIpAddressById(ipAddress);
     }
 
+    public Integer countIpActive() {
+        return ipAddressRepository.countByStatus(IpStatus.ACTIVE);
+    }
+
+    public Integer countIpInactive() {
+        return ipAddressRepository.countByStatus(IpStatus.INACTIVE);
+    }
 
     @Transactional
     public IpAddress createIpAddress(String ipAddress) {
@@ -61,8 +70,11 @@ public class IpAddressService {
         return ipAddressRepository.findById(ipAddress).orElseThrow(() -> new ResourceNotFoundException("ip", "IP Address not found with id: " + ipAddress));
     }
 
-    public List<IpAddress> getAllIpAddresses() {
-        return ipAddressRepository.findAll();
+    public Page<IpAddress> getAllIpAddresses(Pageable pageable, String status, String keyword) {
+        IpStatus ipStatus = status != null && !status.trim().isEmpty() ? IpStatus.valueOf(status.trim()) : null;
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+
+        return ipAddressRepository.findAll(pageable, keyword, ipStatus);
     }
 
     //maybe dont need

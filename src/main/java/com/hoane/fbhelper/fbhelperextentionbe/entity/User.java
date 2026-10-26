@@ -56,7 +56,7 @@ public class User {
     private UserStatus status = UserStatus.PENDING;
 
     @Builder.Default
-    private Boolean isNewUser = false;
+    private Boolean isNewUser = true;
 
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @Builder.Default
@@ -64,7 +64,7 @@ public class User {
 
 
     public boolean isMember() {
-        return this.isActive() && (this.isRole(Role.ROLE_MEMBER) || this.isRole(Role.ROLE_ADMIN));
+        return this.isActive() && (this.isRole(Role.ROLE_MEMBER) || this.isRole(Role.ROLE_ADMIN) || this.isRole(Role.ROLE_SUPER_ADMIN));
     }
 
     public boolean isStatus(UserStatus status) {

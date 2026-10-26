@@ -3,6 +3,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentWalk;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.CommentWalkDetail;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,7 +36,6 @@ public class CommentWalkResponse {
         private Integer matchRateValueContentQueryIncludes;
 
         private String name;
-
 
         private Boolean isActive;
 
@@ -72,5 +72,15 @@ public class CommentWalkResponse {
             this.deviceId = commentWalkDetail.getDevice().getId();
             this.commentWalkId = commentWalkDetail.getCommentWalk().getId();
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class PageResponse {
+        private List<DataResponse> data;
+        private Pagination pagination;
     }
 }

@@ -1,9 +1,9 @@
 package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.*;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceSettingResponse;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
@@ -16,9 +16,12 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -53,8 +56,65 @@ public class DeviceService {
         return deviceSettingRepository.findByDevice_IdAndUser_id(deviceId, userId) != null;
     }
 
-    public List<DeviceResponse> findAllByUserWithDeviceSetting(String userId) {
-        List<Device> list = deviceRepository.findAllByUser_Id(userId);
+    public Integer countAllDeviceActive() {
+        return deviceRepository.countByStatus(DeviceStatus.ACTIVE);
+    }
+
+    public Integer countAllDeviceInactive() {
+        return deviceRepository.countByStatus(DeviceStatus.INACTIVE);
+    }
+
+    public BasePageResponse<List<AdminDeviceResponse>> findAllDeviceWithDeviceSetting(Pageable pageable, String keyword, String status) {
+
+        DeviceStatus deviceStatus = status != null && !status.trim().isEmpty() ? DeviceStatus.valueOf(status.trim()) : null;
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+
+        Page<Device> devicePage = deviceRepository.findAll(pageable, keyword, deviceStatus);
+        List<Device> list = devicePage.getContent();
+
+        List<AdminDeviceResponse> adminDeviceResponses = new ArrayList<>();
+
+        for (Device device : list) {
+            Integer active = deviceSettingRepository.countByStatusAndDevice_Id(DeviceSettingStatus.ACTIVE, device.getId());
+            Integer inactive = deviceSettingRepository.countByStatusAndDevice_Id(DeviceSettingStatus.INACTIVE, device.getId());
+            adminDeviceResponses.add(new AdminDeviceResponse(new DeviceResponse(device), active, inactive));
+        }
+
+        Pagination pagination = new Pagination(devicePage.getNumber(), devicePage.getSize(), devicePage.getTotalElements(), devicePage.getTotalPages(), devicePage.hasNext());
+
+        return new BasePageResponse<>(adminDeviceResponses, pagination);
+
+    }
+
+    public BasePageResponse<List<DeviceSettingResponse>> findAllDeviceSettingByDeviceIdForAdmin(String deviceId, Pageable pageable, String keyword, String status) {
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+        DeviceSettingStatus deviceSettingStatus = status != null && !status.trim().isEmpty() ? DeviceSettingStatus.valueOf(status.trim()) : null;
+
+        Page<DeviceSetting> deviceSettingPage = deviceSettingRepository.findAllByDevice_Id(deviceId, pageable, keyword, deviceSettingStatus);
+        List<DeviceSetting> deviceSettings = deviceSettingPage.getContent();
+        List<PostConfig> postConfigs = postConfigRepository.findAllByDevice_Id(deviceId);
+        List<CommentWalkConfig> commentWalkConfigs = commentWalkConfigRepository.findAllByDevice_Id(deviceId);
+
+        List<DeviceSettingResponse> res = deviceSettings.stream().map(ds -> {
+            PostConfig postConfig = postConfigs.stream().filter(pc -> pc.getDevice().getId().equals(ds.getDevice().getId())).findFirst().orElse(null);
+            CommentWalkConfig commentWalkConfig = commentWalkConfigs.stream().filter(cwc -> cwc.getDevice().getId().equals(ds.getDevice().getId())).findFirst().orElse(null);
+            DeviceSettingResponse deviceSettingResponse = new DeviceSettingResponse(ds, postConfig, commentWalkConfig);
+            deviceSettingResponse.setUser(new UserDetailsResponse(ds.getUser()));
+            return deviceSettingResponse;
+        }).toList();
+
+
+        Pagination pagination = new Pagination(deviceSettingPage.getNumber(), deviceSettingPage.getSize(), deviceSettingPage.getTotalElements(), deviceSettingPage.getTotalPages(), deviceSettingPage.hasNext());
+        return new BasePageResponse<>(res, pagination);
+    }
+
+    public BasePageResponse<List<DeviceResponse>> findAllByUserWithDeviceSetting(String userId, Pageable pageable, String keyword, String status) {
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+        DeviceStatus deviceStatus = status != null && !status.trim().isEmpty() ? DeviceStatus.valueOf(status.trim()) : null;
+
+        Page<Device> devicePage = deviceRepository.findAllByUser_Id(userId, pageable, keyword, deviceStatus);
+        List<Device> list = devicePage.getContent();
+
         List<DeviceSetting> deviceSettingList = deviceSettingRepository.findAllByUser_Id(userId);
 
         List<DeviceResponse> deviceResponseList = list.stream().map(d -> {
@@ -67,7 +127,9 @@ public class DeviceService {
 
             return deviceResponse;
         }).toList();
-        return deviceResponseList;
+
+        Pagination pagination = new Pagination(devicePage.getNumber(), devicePage.getSize(), devicePage.getTotalElements(), devicePage.getTotalPages(), devicePage.hasNext());
+        return new BasePageResponse<>(deviceResponseList, pagination);
     }
 
     public Device findByIdOrThrow(String id) {
@@ -388,6 +450,18 @@ public class DeviceService {
         Device device = findByIdOrThrow(id);
         device.setStatus(status);
         deviceRepository.save(device);
+    }
+
+    public Boolean updateDeviceStatusSetting(RequestModels.UpdateStatusDeviceSettingRequest request) {
+        String deviceId = request.deviceId();
+        String userId = request.userId();
+        DeviceSettingStatus status = DeviceSettingStatus.valueOf(request.status());
+
+        DeviceSetting deviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(deviceId, userId);
+        deviceSetting.setStatus(status);
+        deviceSettingRepository.save(deviceSetting);
+
+        return true;
     }
 
     private boolean canUpdateSetting(DeviceSettingRequest request, User user) {

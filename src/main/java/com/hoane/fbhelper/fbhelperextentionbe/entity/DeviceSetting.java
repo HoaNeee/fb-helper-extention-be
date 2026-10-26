@@ -10,9 +10,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -65,6 +67,11 @@ public class DeviceSetting {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private DeviceSettingStatus status = DeviceSettingStatus.ACTIVE;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false, updatable = false)

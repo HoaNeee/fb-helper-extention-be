@@ -66,35 +66,35 @@ public class SystemSettingService {
     }
 
 
-    public void updateSystemSetting(SystemSetting systemSetting) {
+    public SystemSetting updateSystemSetting(SystemSetting systemSetting) {
         SystemSetting existSystemSetting = findSystemSettingOrThrow();
 
         modelMapper.map(systemSetting, existSystemSetting);
 
-        systemSettingRepository.save(existSystemSetting);
+        return systemSettingRepository.save(existSystemSetting);
     }
 
-    public void updateSystemToolSetting(SystemToolSetting systemToolSetting) {
+    public SystemToolSetting updateSystemToolSetting(SystemToolSetting systemToolSetting) {
         SystemToolSetting existSystemToolSetting = findSystemToolSettingOrThrow();
 
         modelMapper.map(systemToolSetting, existSystemToolSetting);
 
-        systemToolSettingRepository.save(existSystemToolSetting);
+        return systemToolSettingRepository.save(existSystemToolSetting);
     }
 
-    public void updateSystemPostSetting(SystemPostSetting systemPostSetting) {
+    public SystemPostSetting updateSystemPostSetting(SystemPostSetting systemPostSetting) {
         SystemPostSetting existSystemPostSetting = findSystemPostSettingOrThrow();
 
         modelMapper.map(systemPostSetting, existSystemPostSetting);
 
-        systemPostSettingRepository.save(existSystemPostSetting);
+        return systemPostSettingRepository.save(existSystemPostSetting);
     }
 
-    public void updateSystemCommentWalkSetting(SystemCommentWalkSetting systemCommentWalkSetting) {
+    public SystemCommentWalkSetting updateSystemCommentWalkSetting(SystemCommentWalkSetting systemCommentWalkSetting) {
         SystemCommentWalkSetting existSystemCommentWalkSetting = findSystemCommentWalkSettingOrThrow();
 
         modelMapper.map(systemCommentWalkSetting, existSystemCommentWalkSetting);
 
-        systemCommentWalkSettingRepository.save(existSystemCommentWalkSetting);
+        return systemCommentWalkSettingRepository.save(existSystemCommentWalkSetting);
     }
 }

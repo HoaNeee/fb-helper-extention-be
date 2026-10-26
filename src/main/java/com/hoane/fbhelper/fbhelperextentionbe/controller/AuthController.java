@@ -23,14 +23,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(HttpServletRequest rawRequest, @RequestBody LoginRequest loginRequest) {
         String ipAddress = RequestUtils.getClientIp(rawRequest);
-
         LoginResponse loginResponse = authService.login(loginRequest, ipAddress);
         return ApiResponse.success(200, "Login successful", loginResponse);
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest registerRequest) {
-
         return ApiResponse.success(201, "User registered successfully", null);
     }
 

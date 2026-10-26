@@ -13,6 +13,8 @@ import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,11 @@ public class DataGroupPostService {
         return dataGroupPostRepository.findAllByUser_Id(user_id);
     }
 
+    public Page<DataGroupPost> findAllByUser(String user_id, Pageable pageable, String keyword) {
+        keyword = keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null;
+        return dataGroupPostRepository.findAllByUser_Id(user_id, pageable, keyword);
+    }
+
     public List<DataGroupPostDetail> findAllDetailsByDeviceIdAndUserId(String deviceId, String userId) {
         return dataGroupPostDetailRepository.findAllByDevice_IdAndUser_Id(deviceId, userId);
     }
@@ -49,9 +56,13 @@ public class DataGroupPostService {
         return dataGroupPostRepository.findById(data_group_post_id).orElseThrow(() -> new ResourceNotFoundException("data_group_post", "Data group post not found"));
     }
 
-    public List<DataGroupPostResponse.DataGroupResponse> getListDataGroupPostAndDetails(String user_id, String device_id) {
-        List<DataGroupPost> dataGroupPosts = findAllByUser(user_id);
-        List<DataGroupPostDetail> dataGroupPostDetails = findAllDetailsByDeviceIdAndUserId(device_id, user_id);
+    public DataGroupPostResponse.PageResponse getListDataGroupPostAndDetails(String user_id, String device_id, Pageable pageable, String keyword) {
+        Page<DataGroupPost> dataGroupPostPage = findAllByUser(user_id, pageable, keyword);
+        List<DataGroupPost> dataGroupPosts = dataGroupPostPage.getContent();
+        List<String> ids = dataGroupPosts.stream().map(DataGroupPost::getId).toList();
+
+
+        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostDetailRepository.findAllByListDataGroupPostId(ids);
 
         List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPosts.stream()
                 .map(dataGroupPost -> {
@@ -69,7 +80,9 @@ public class DataGroupPostService {
                     return dataGroupResponse;
                 })
                 .toList();
-        return list;
+
+        Pagination pagination = new Pagination(dataGroupPostPage.getNumber(), dataGroupPostPage.getSize(), dataGroupPostPage.getTotalElements(), dataGroupPostPage.getTotalPages(), dataGroupPostPage.hasNext());
+        return new DataGroupPostResponse.PageResponse(list, pagination);
     }
 
     @Transactional
@@ -265,7 +278,7 @@ public class DataGroupPostService {
     }
 
     @Transactional
-    public List<DataGroupPostResponse.DataGroupResponse> syncDataGroupPostToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
+    public Boolean syncDataGroupPostToDevice(String userId, RequestModels.DeviceSyncDataRequest request) {
         String currentDeviceId = request.currentDeviceId();
         String targetDeviceId = request.targetDeviceId();
 
@@ -299,7 +312,7 @@ public class DataGroupPostService {
             }
         });
 
-        return getListDataGroupPostAndDetails(userId, currentDeviceId);
+        return true;
     }
 
     public Integer getMaxPriority(String userId) {

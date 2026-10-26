@@ -1,6 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.Pagination;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.ApiResponseCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

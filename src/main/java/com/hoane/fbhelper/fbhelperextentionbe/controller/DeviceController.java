@@ -4,11 +4,10 @@ package com.hoane.fbhelper.fbhelperextentionbe.controller;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.*;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnCreate;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.action.OnUpdate;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.CommentWalkConfigResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.DeviceSettingResponse;
-import com.hoane.fbhelper.fbhelperextentionbe.dto.response.PostConfigResponse;
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.response.ApiResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.service.DeviceService;
 import com.hoane.fbhelper.fbhelperextentionbe.service.UserService;
@@ -32,16 +31,17 @@ public class DeviceController {
     @Autowired
     private UserService userService;
 
-    @PreAuthorize("@userService.admin")
+
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DeviceResponse>>> getAllDevicesByUser() {
+    public ResponseEntity<PageResponse<List<DeviceResponse>>> getAllDevicesByUser(@RequestParam(required = false) String keyword, @RequestParam(required = false) String status, @Valid @ModelAttribute BasePageRequest basePageRequest) {
 
         String user_id = SecurityContextUtils.getUserIdFromContext();
 
-        List<DeviceResponse> devices = deviceService.findAllByUserWithDeviceSetting(user_id);
+        BasePageResponse<List<DeviceResponse>> devices = deviceService.findAllByUserWithDeviceSetting(user_id, basePageRequest.toPageable(), keyword, status);
 
-        return ApiResponse.success(200, "Get list devices successfully", devices);
+        return ResponseEntity.ok(new PageResponse<>(200, "Get all devices successfully", true, devices.getData(), devices.getPagination()));
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Device>> getDeviceDetail(@PathVariable String id) {
@@ -164,8 +164,7 @@ public class DeviceController {
     @PreAuthorize("@userService.admin")
     @PatchMapping("/update-status/{id}")
     public ResponseEntity<ApiResponse<Void>> updateDeviceStatus(@PathVariable String id, @Valid @RequestBody RequestModels.UpdateStatusDeviceRequest request) {
-
-        deviceService.updateStatusDevice(id, request.status());
+        deviceService.updateStatusDevice(id, DeviceStatus.valueOf(request.status()));
 
         return ApiResponse.success(200, "Update status device successfully", null);
     }
@@ -242,6 +241,45 @@ public class DeviceController {
         deviceService.deleteDevice(id);
         return ApiResponse.success(200, "Delete device successfully", null);
     }
+
+
+    @GetMapping("/admin/list-device")
+    public ResponseEntity<PageResponse<List<AdminDeviceResponse>>> getAllDevicesForAdmin(@Valid @ModelAttribute BasePageRequest basePageRequest, @RequestParam(required = false) String status, @RequestParam(required = false) String keyword) {
+
+        BasePageResponse<List<AdminDeviceResponse>> devices = deviceService.findAllDeviceWithDeviceSetting(basePageRequest.toPageable(), keyword, status);
+
+        return ResponseEntity.ok(new PageResponse<>(200, "Get all devices for admin successfully", true, devices.getData(), devices.getPagination()));
+    }
+
+    @PreAuthorize("@userService.admin")
+    @GetMapping("/admin/statistics")
+    public ResponseEntity<ApiResponse<ResponseModels.AdminStatisticDeviceResponse>> getStatisticDevice() {
+
+        Integer countDeviceActive = deviceService.countAllDeviceActive();
+        Integer countDeviceInactive = deviceService.countAllDeviceInactive();
+
+        return ApiResponse.success(200, "Get statistic device successfully", new ResponseModels.AdminStatisticDeviceResponse(countDeviceActive, countDeviceInactive));
+    }
+
+    @PreAuthorize("@userService.admin")
+    @GetMapping("/admin/list-device-setting/{deviceId}")
+    public ResponseEntity<PageResponse<List<DeviceSettingResponse>>> getAllDeviceSettingForAdminByDeviceId(@Valid @ModelAttribute BasePageRequest basePageRequest, @PathVariable String deviceId, @RequestParam(required = false) String keyword, @RequestParam(required = false) String status) {
+
+        System.out.println("keyword: " + keyword + ", status: " + status);
+        BasePageResponse<List<DeviceSettingResponse>> devices = deviceService.findAllDeviceSettingByDeviceIdForAdmin(deviceId, basePageRequest.toPageable(), keyword, status);
+
+        return ResponseEntity.ok(new PageResponse<>(200, "Get all device setting for admin successfully", true, devices.getData(), devices.getPagination()));
+    }
+
+    @PreAuthorize("@userService.admin")
+    @PatchMapping("/admin/change-status-device-setting")
+    public ResponseEntity<ApiResponse<Boolean>> updateStatusDeviceSetting(@Valid @RequestBody RequestModels.UpdateStatusDeviceSettingRequest request) {
+
+        Boolean success = deviceService.updateDeviceStatusSetting(request);
+
+        return ApiResponse.success(200, "Update status device setting successfully", success);
+    }
+
 
     private void mapSettingResponseForMember(DeviceSettingResponse response, User user) {
         if (!user.isMember()) {

@@ -19,7 +19,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceSettingResponse {
-    //    private String deviceId;
+    private Integer id;
     private Boolean isFixStealFocus;
     private Boolean isFixStealAllFocus;
     private Boolean isRandomBreakBatch;
@@ -46,7 +46,10 @@ public class DeviceSettingResponse {
 
     private DeviceSettingStatus status;
 
+    private UserDetailsResponse user;
+
     public DeviceSettingResponse(DeviceSetting deviceSetting) {
+        this.id = deviceSetting.getId();
         this.isCommentWhenPost = deviceSetting.getIsCommentWhenPost();
         this.isFixStealFocus = deviceSetting.getIsFixStealFocus();
         this.isInteractBatch = deviceSetting.getIsInteractBatch();
