@@ -6,18 +6,21 @@ import com.hoane.fbhelper.fbhelperextentionbe.dto.request.RequestModels;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.LoginResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.response.RegisterResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.User;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.RequestPlatform;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.UserStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.wrapper.CustomUserDetails;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.UserExistException;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.UserNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.UserRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.JwtUtils;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.MyRequestContext;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -52,11 +55,20 @@ public class AuthService {
             throw new UserExistException("Username already exists");
         }
 
+        if (userRepository.existsUserByEmail(registerRequest.getEmail())) {
+            throw new UserExistException("Email already exists");
+        }
+
         // Create new user
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setEmail(registerRequest.getEmail());
+        User user = User.builder()
+                .username(registerRequest.getUsername())
+                .email(registerRequest.getEmail())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(Role.ROLE_USER)
+                .isNewUser(true)
+                .status(UserStatus.PENDING)
+                .id(IdGenerator.generateId(10))
+                .build();
 
         User saved = userRepository.save(user);
 
@@ -67,6 +79,8 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
 
+        RequestPlatform loginPlatform = Utils.getRequestPlatform(null);
+
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -75,17 +89,28 @@ public class AuthService {
             throw new UserNotFoundException("User not found");
         }
 
-        if (userDetails.getIsNewUser() && (userDetails.getRole().equals(Role.ROLE_USER) || userDetails.getRole().equals(Role.ROLE_ADMIN))) {
+
+        if (loginPlatform.equals(RequestPlatform.DEVICE) || loginPlatform.equals(RequestPlatform.WEB)) {
+            if (userDetails.isSuperAdmin()) {
+                throw new UserNotFoundException("User not found");
+            }
+        }
+
+        if (userDetails.getIsNewUser() && !userDetails.isSuperAdmin()) {
             handleForNewUser(userDetails.getId());
         }
 
-        if (ipAddress != null) {
+        if (ipAddress != null && loginPlatform.equals(RequestPlatform.DEVICE)) {
             ipAddressService.findByIpAddressOrCreate(ipAddress);
         }
 
         String token = jwtUtils.generateToken(authentication);
 
         LoginResponse response = new LoginResponse(token, userDetails.getId(), userDetails.getUsername(), userDetails.getUserStatus());
+
+        if (loginPlatform.equals(RequestPlatform.ADMIN) && !userDetails.isAdmin()) {
+            throw new UserNotFoundException("User not found");
+        }
 
         if (userDetails.isAdmin()) {
             response.setRole(userDetails.getRole());

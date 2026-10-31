@@ -24,7 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/comment-walks")
-@PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
+@PreAuthorize("@userService.member")
 public class CommentWalkController {
     @Autowired
     private CommentWalkService commentWalkService;
@@ -88,7 +88,7 @@ public class CommentWalkController {
         List<CommentWalk> commentWalks = commentWalkService.importCommentWalk(userId, request);
         List<CommentWalkResponse.DataResponse> listResponse = commentWalks.stream().map(CommentWalkResponse.DataResponse::new).toList();
 
-        return ApiResponse.success(200, "Import comment walks successfully", listResponse);
+        return ApiResponse.success(201, "Import comment walks successfully", listResponse);
     }
 
     @PostMapping("/sync-device-comment-walk")
@@ -112,7 +112,7 @@ public class CommentWalkController {
     @PatchMapping("/details")
     public ResponseEntity<ApiResponse<CommentWalkResponse.CommentWalkDetailResponse>> updateCommentWalkDetail(@Valid @RequestBody CommentWalkRequest.CommentWalkDetailRequest request) {
 
-        CommentWalkDetail commentWalkDetail = commentWalkService.updateCommentWalkDetail(request);
+        CommentWalkDetail commentWalkDetail = commentWalkService.updateOrCreateCommentWalkDetail(request);
 
         return ApiResponse.success(200, "Update comment walk status successfully", new CommentWalkResponse.CommentWalkDetailResponse(commentWalkDetail));
     }
@@ -123,7 +123,7 @@ public class CommentWalkController {
         String userId = SecurityContextUtils.getUserIdFromContext();
 
         commentWalkService.updateStatusAllDevice(userId, id, request);
-        return ApiResponse.success(200, "Update status comment walk all device successfully", null);
+        return ApiResponse.success(204, "Update status comment walk all device successfully", null);
     }
 
     @DeleteMapping("/delete-all-comment-walks")
@@ -133,7 +133,7 @@ public class CommentWalkController {
 
         commentWalkService.deleteAll(userId);
 
-        return ApiResponse.success(200, "Delete all comment walks by user successfully", null);
+        return ApiResponse.success(204, "Delete all comment walks by user successfully", null);
     }
 
     @DeleteMapping("{id}")
@@ -141,7 +141,7 @@ public class CommentWalkController {
 
         commentWalkService.delete(id);
 
-        return ApiResponse.success(200, "Delete data comment walk successfully", null);
+        return ApiResponse.success(204, "Delete data comment walk successfully", null);
     }
 
 }

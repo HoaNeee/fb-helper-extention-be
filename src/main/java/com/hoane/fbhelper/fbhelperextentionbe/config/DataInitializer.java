@@ -6,20 +6,20 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.IpStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.UserStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.*;
-import com.hoane.fbhelper.fbhelperextentionbe.service.GeoIpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
@@ -82,15 +82,25 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private IpAddressRepository ipAddressRepository;
 
-
     @Value("${app.upload.dir}")
     private String UPLOAD_DIR;
 
+    @Value("${app.env}")
+    private String ENV;
+
+    @Value("${app.admin.username}")
+    private String ADMIN_USERNAME;
+
+    @Value("${app.admin.password}")
+    private String ADMIN_PASSWORD;
+
+    @Value("${app.admin.email}")
+    private String ADMIN_EMAIL;
 
     @Override
     public void run(String... args) throws Exception {
 
-
+        boolean isDevMode = ENV.equalsIgnoreCase("dev");
         try {
             FileSystemUtils.deleteRecursively(Paths.get(UPLOAD_DIR).toFile());
             Files.createDirectory(Paths.get(UPLOAD_DIR));
@@ -98,195 +108,217 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Could not delete uploads directory: " + e.getMessage());
         }
 
-        String userId = Constant.USER_ID;
-        String deviceId = Constant.DEVICE_ID;
-        String dataGroupPostId = Constant.DATA_GROUP_POST_ID;
+        if (isDevMode) {
+            String userId = Constant.USER_ID;
+            String deviceId = Constant.DEVICE_ID;
+            String dataGroupPostId = Constant.DATA_GROUP_POST_ID;
 
-        User u = User.builder()
-                .id(userId)
-                .username("admin")
-                .email("admin@gmail.com")
-                .role(Role.ROLE_ADMIN)
-                .status(UserStatus.ACTIVE)
-                .build();
+            User u = User.builder()
+                    .id(userId)
+                    .username("admin")
+                    .email("admin@gmail.com")
+                    .role(Role.ROLE_ADMIN)
+                    .status(UserStatus.ACTIVE)
+                    .build();
 
-        User u2 = User.builder()
-                .id("xyz1234567")
-                .username("user1")
-                .email("user@gmail.com")
-                .build();
+            User u2 = User.builder()
+                    .id("xyz1234567")
+                    .username("user1")
+                    .email("user@gmail.com")
+                    .build();
 
-        User u3 = User.builder()
-                .id("xyz1234568")
-                .username("user2")
-                .email("user2@gmail.com")
-                .status(UserStatus.LOCKED)
-                .build();
+            User u3 = User.builder()
+                    .id("xyz1234568")
+                    .username("user2")
+                    .email("user2@gmail.com")
+                    .status(UserStatus.LOCKED)
+                    .build();
 
-        User u4 = User.builder()
-                .id("xyz1234569")
-                .username("user3")
-                .email("user3@gmail.com")
-                .status(UserStatus.ACTIVE)
-                .role(Role.ROLE_MEMBER)
-                .isNewUser(true)
-                .build();
+            User u4 = User.builder()
+                    .id("xyz1234569")
+                    .username("user3")
+                    .email("user3@gmail.com")
+                    .status(UserStatus.ACTIVE)
+                    .role(Role.ROLE_MEMBER)
+                    .isNewUser(true)
+                    .build();
 
-        String password = "admin";
-        String hash = passwordEncoder.encode(password);
-        u.setPassword(hash);
+            String password = "admin";
+            String hash = passwordEncoder.encode(password);
+            u.setPassword(hash);
 
-        String pwd2 = "user1";
-        String hash2 = passwordEncoder.encode(pwd2);
-        u2.setPassword(hash2);
+            String pwd2 = "user1";
+            String hash2 = passwordEncoder.encode(pwd2);
+            u2.setPassword(hash2);
 
-        String pwd3 = "user2";
-        String hash3 = passwordEncoder.encode(pwd3);
-        u3.setPassword(hash3);
+            String pwd3 = "user2";
+            String hash3 = passwordEncoder.encode(pwd3);
+            u3.setPassword(hash3);
 
-        String pwd4 = "user3";
-        String hash4 = passwordEncoder.encode(pwd4);
-        u4.setPassword(hash4);
+            String pwd4 = "user3";
+            String hash4 = passwordEncoder.encode(pwd4);
+            u4.setPassword(hash4);
 
-        userRepository.save(u);
-        userRepository.save(u2);
-        userRepository.save(u3);
-        userRepository.save(u4);
+            userRepository.save(u);
+            userRepository.save(u2);
+            userRepository.save(u3);
+            userRepository.save(u4);
 
-        DataGroupPost dataGroupPost = DataGroupPost.builder()
-                .title("Cau giay")
-                .name("79 cau giay")
-                .files(List.of("https://picsum.photos/200/300", "https://picsum.photos/300/200"))
-                .contents(List.of("Content 1", "Content 2"))
-                .fromMember(0)
-                .toMember(100)
-                .user(u)
-                .id(dataGroupPostId)
-                .priority(1)
-                .build();
+            DataGroupPost dataGroupPost = DataGroupPost.builder()
+                    .title("Cau giay")
+                    .name("79 cau giay")
+                    .files(List.of("https://picsum.photos/200/300",
+                            "https://picsum.photos/300/200"))
+                    .contents(List.of("Content 1", "Content 2"))
+                    .fromMember(0)
+                    .toMember(100)
+                    .user(u)
+                    .id(dataGroupPostId)
+                    .priority(1)
+                    .build();
 
-        dataGroupPostRepository.save(dataGroupPost);
+            dataGroupPostRepository.save(dataGroupPost);
 
-        Device device = Device.builder()
-                .id(deviceId)
-                .deviceName("Hoa chrome device 1")
-                .deviceType("chrome")
-                .build();
+            Device device = Device.builder()
+                    .id(deviceId)
+                    .deviceName("Hoa chrome device 1")
+                    .deviceType("chrome")
+                    .build();
 
-        deviceRepository.save(device);
+            deviceRepository.save(device);
 
-        Device device1 = Device.builder()
-                .id("xyz12348")
-                .deviceName("Hoa chrome device 2")
-                .deviceType("chrome")
-                .build();
+            Device device1 = Device.builder()
+                    .id("xyz12348")
+                    .deviceName("Hoa chrome device 2")
+                    .deviceType("chrome")
+                    .build();
 
-        deviceRepository.save(device1);
+            deviceRepository.save(device1);
 
-        DataGroupPostDetail dataGroupPostDetail = DataGroupPostDetail.builder()
-                .device(device)
-                .dataGroupPost(dataGroupPost)
-                .isActive(true)
-                .build();
+            DataGroupPostDetail dataGroupPostDetail = DataGroupPostDetail.builder()
+                    .device(device)
+                    .dataGroupPost(dataGroupPost)
+                    .isActive(true)
+                    .build();
 
-        dataGroupPostDetailRepository.save(dataGroupPostDetail);
+            dataGroupPostDetailRepository.save(dataGroupPostDetail);
 
-        DeviceSetting deviceSetting = new DeviceSetting();
-        deviceSetting.setDevice(device);
-        deviceSetting.setUser(u);
-        deviceSetting.setIsSpecialFrameHours(true);
-        deviceSettingRepository.save(deviceSetting);
+            DeviceSetting deviceSetting = new DeviceSetting();
+            deviceSetting.setDevice(device);
+            deviceSetting.setUser(u);
+            deviceSetting.setIsSpecialFrameHours(true);
+            deviceSettingRepository.save(deviceSetting);
 
-        DeviceSetting deviceSetting1 = new DeviceSetting();
-        deviceSetting1.setDevice(device1);
-        deviceSetting1.setUser(u);
-        deviceSettingRepository.save(deviceSetting1);
+            DeviceSetting deviceSetting1 = new DeviceSetting();
+            deviceSetting1.setDevice(device1);
+            deviceSetting1.setUser(u);
+            deviceSettingRepository.save(deviceSetting1);
 
-        PostConfig postConfig = new PostConfig();
-        postConfig.setDevice(device);
-        postConfig.setUser(u);
-        postConfigRepository.save(postConfig);
+            PostConfig postConfig = new PostConfig();
+            postConfig.setDevice(device);
+            postConfig.setUser(u);
+            postConfigRepository.save(postConfig);
 
-        CommentWalkConfig commentWalkConfig = new CommentWalkConfig();
-        commentWalkConfig.setDevice(device);
-        commentWalkConfig.setUser(u);
-        commentWalkConfigRepository.save(commentWalkConfig);
+            CommentWalkConfig commentWalkConfig = new CommentWalkConfig();
+            commentWalkConfig.setDevice(device);
+            commentWalkConfig.setUser(u);
+            commentWalkConfigRepository.save(commentWalkConfig);
 
-        Scheduler scheduler = Scheduler.builder()
-                .device(device)
-                .user(u)
-                .build();
+            Scheduler scheduler = Scheduler.builder()
+                    .device(device)
+                    .user(u)
+                    .build();
 
-        schedulerRepository.save(scheduler);
+            schedulerRepository.save(scheduler);
 
-        CommentPost commentPost = CommentPost.builder()
-                .user(u)
-                .maxCommentPerPost(Constant.MAX_COMMENT_PER_POST)
-                .build();
+            CommentPost commentPost = CommentPost.builder()
+                    .user(u)
+                    .maxCommentPerPost(Constant.MAX_COMMENT_PER_POST)
+                    .build();
 
-        commentPostRepository.save(commentPost);
+            commentPostRepository.save(commentPost);
 
-        InteractBeforePost interactBeforePost = InteractBeforePost.builder()
-                .user(u)
-                .maxPostInteractPerBatch(Constant.MAX_POST_INTERACT_PER_BATCH)
-                .build();
-        interactBeforePostRepository.save(interactBeforePost);
+            InteractBeforePost interactBeforePost = InteractBeforePost.builder()
+                    .user(u)
+                    .maxPostInteractPerBatch(Constant.MAX_POST_INTERACT_PER_BATCH)
+                    .build();
+            interactBeforePostRepository.save(interactBeforePost);
 
-        SpecialFrameHour specialFrameHour = SpecialFrameHour.builder()
-                .user(u)
-                .startTime(2).endTime(4).maxGroup(8)
-                .applyDates(List.of(1, 2, 3, 4))
-                .build();
+            SpecialFrameHour specialFrameHour = SpecialFrameHour.builder()
+                    .user(u)
+                    .startTime(2).endTime(4).maxGroup(8)
+                    .applyDates(List.of(1, 2, 3, 4))
+                    .build();
 
-        SpecialFrameHourSetting specialFrameHourSetting = new SpecialFrameHourSetting();
-        specialFrameHourSetting.setDevice(device);
-        specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
-        specialFrameHourSetting.setIsActive(true);
+            SpecialFrameHourSetting specialFrameHourSetting = new SpecialFrameHourSetting();
+            specialFrameHourSetting.setDevice(device);
+            specialFrameHourSetting.setSpecialFrameHour(specialFrameHour);
+            specialFrameHourSetting.setIsActive(true);
 
-        specialFrameHourRepository.save(specialFrameHour);
+            specialFrameHourRepository.save(specialFrameHour);
 
-        specialFrameHourSettingRepository.save(specialFrameHourSetting);
+            specialFrameHourSettingRepository.save(specialFrameHourSetting);
 
-        CommentWalk commentWalk = CommentWalk.builder()
-                .titleQuerySearchs(List.of("query1", "query2"))
-                .user(u)
-                .keywordsCertainChoice(List.of("keyword1", "keyword2"))
-                .keywordQueryIncludes(List.of("include1", "include2"))
-                .keywordQueryExcludes(List.of("exclude1", "exclude2"))
-                .contents(List.of("content1", "content2"))
-                .files(List.of("https://picsum.photos/200/300"))
-                .matchRateValueContentQueryIncludes(2)
-                .name("Comment Walk 1")
-                .id(Constant.COMMENT_WALK_ID)
-                .build();
+            CommentWalk commentWalk = CommentWalk.builder()
+                    .titleQuerySearchs(List.of("query1", "query2"))
+                    .user(u)
+                    .keywordsCertainChoice(List.of("keyword1", "keyword2"))
+                    .keywordQueryIncludes(List.of("include1", "include2"))
+                    .keywordQueryExcludes(List.of("exclude1", "exclude2"))
+                    .contents(List.of("content1", "content2"))
+                    .files(List.of("https://picsum.photos/200/300"))
+                    .matchRateValueContentQueryIncludes(2)
+                    .name("Comment Walk 1")
+                    .id(Constant.COMMENT_WALK_ID)
+                    .build();
 
-        commentWalkRepository.save(commentWalk);
+            commentWalkRepository.save(commentWalk);
 
-        CommentWalkDetail commentWalkDetail = CommentWalkDetail.builder()
-                .commentWalk(commentWalk)
-                .device(device)
-                .isActive(true)
-                .build();
+            CommentWalkDetail commentWalkDetail = CommentWalkDetail.builder()
+                    .commentWalk(commentWalk)
+                    .device(device)
+                    .isActive(true)
+                    .build();
 
-        commentWalkDetailRepository.save(commentWalkDetail);
+            commentWalkDetailRepository.save(commentWalkDetail);
 
+            IpAddress ipAddress = IpAddress.builder()
+                    .id("192.101.102.103")
+                    .status(IpStatus.ACTIVE)
+                    .address("Hanoi, Vietnam")
+                    .build();
+
+            ipAddressRepository.save(ipAddress);
+        } else {
+            User admin = User.builder()
+                    .username(ADMIN_USERNAME)
+                    .email(ADMIN_EMAIL)
+                    .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                    .status(UserStatus.ACTIVE)
+                    .role(Role.ROLE_SUPER_ADMIN)
+                    .id(Constant.USER_ID)
+                    .build();
+            if (userRepository.count() == 0) {
+                userRepository.save(admin);
+            }
+        }
 
         SystemSetting systemSetting = new SystemSetting();
         SystemToolSetting systemToolSetting = new SystemToolSetting();
         SystemPostSetting systemPostSetting = new SystemPostSetting();
         SystemCommentWalkSetting systemCommentWalkSetting = new SystemCommentWalkSetting();
-        systemSettingRepository.save(systemSetting);
-        systemToolSettingRepository.save(systemToolSetting);
-        systemPostSettingRepository.save(systemPostSetting);
-        systemCommentWalkSettingRepository.save(systemCommentWalkSetting);
+        if (systemSettingRepository.count() == 0) {
+            systemSettingRepository.save(systemSetting);
+        }
+        if (systemToolSettingRepository.count() == 0) {
+            systemToolSettingRepository.save(systemToolSetting);
+        }
+        if (systemPostSettingRepository.count() == 0) {
+            systemPostSettingRepository.save(systemPostSetting);
+        }
+        if (systemCommentWalkSettingRepository.count() == 0) {
+            systemCommentWalkSettingRepository.save(systemCommentWalkSetting);
+        }
 
-
-        IpAddress ipAddress = IpAddress.builder()
-                .id("192.101.102.103")
-                .status(IpStatus.ACTIVE)
-                .address("Hanoi, Vietnam")
-                .build();
-
-        ipAddressRepository.save(ipAddress);
     }
 }

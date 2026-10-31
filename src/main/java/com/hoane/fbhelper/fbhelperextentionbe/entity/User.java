@@ -79,6 +79,10 @@ public class User {
         return this.isStatus(UserStatus.ACTIVE);
     }
 
+    public boolean isAdmin() {
+        return this.isRole(Role.ROLE_ADMIN) || this.isRole(Role.ROLE_SUPER_ADMIN);
+    }
+
 
     //Switch using role = member
 //    @Builder.Default

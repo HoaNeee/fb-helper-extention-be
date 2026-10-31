@@ -128,6 +128,8 @@ public class SchedulerService {
         }
         schedulerDetailRepository.save(existedSchedulerDetail);
 
+        deviceService.updateDeviceSettingChangedFromWeb(userId, device_id, true);
+
         return existedSchedulerDetail;
     }
 
@@ -147,6 +149,8 @@ public class SchedulerService {
                     .build();
             schedulerDetailRepository.save(schedulerDetail);
         }
+
+        deviceService.updateDeviceSettingChangedFromWeb(userId, device_id, true);
 
         return schedulerDetail;
     }

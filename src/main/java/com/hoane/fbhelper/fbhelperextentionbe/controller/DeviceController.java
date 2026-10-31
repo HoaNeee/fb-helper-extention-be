@@ -31,7 +31,6 @@ public class DeviceController {
     @Autowired
     private UserService userService;
 
-
     @GetMapping
     public ResponseEntity<PageResponse<List<DeviceResponse>>> getAllDevicesByUser(@RequestParam(required = false) String keyword, @RequestParam(required = false) String status, @Valid @ModelAttribute BasePageRequest basePageRequest) {
 
@@ -51,13 +50,13 @@ public class DeviceController {
         return ApiResponse.success(200, "Get detail device successfully", device);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @GetMapping("/get-all-data")
     public ResponseEntity<ApiResponse<Void>> getAllDataByDevice() {
         return ApiResponse.success(200, "Get all data of device successfully", null);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @GetMapping("/settings/{device_id}")
     public ResponseEntity<ApiResponse<DeviceSettingResponse>> getDeviceSettingOfDevice(@PathVariable String device_id) {
 
@@ -70,7 +69,7 @@ public class DeviceController {
         return ApiResponse.success(200, "Get device settings successfully", deviceSettingResponse);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @GetMapping("/settings/post-config/{device_id}")
     public ResponseEntity<ApiResponse<PostConfigResponse>> getPostConfigOfDevice(@PathVariable String device_id) {
 
@@ -92,6 +91,17 @@ public class DeviceController {
         return ApiResponse.success(200, "Get comment walk config successfully", new CommentWalkConfigResponse(commentWalkConfig));
     }
 
+    @PreAuthorize("@userService.enabled")
+    @GetMapping("/settings/get-is-changed/{deviceId}")
+    public ResponseEntity<ApiResponse<Boolean>> getIsChanged(@PathVariable String deviceId) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        DeviceSetting deviceSetting = deviceService.findDeviceSettingByDeviceIdAndUserIdOrThrow(deviceId, userId);
+
+        return ApiResponse.success(200, "Get is changed successfully", deviceSetting.getIsChanged());
+    }
+
 
     @PostMapping
     public ResponseEntity<ApiResponse<DeviceResponse>> createDevice(@Validated(OnCreate.class) @RequestBody DeviceRequest deviceRequest) {
@@ -103,7 +113,7 @@ public class DeviceController {
         return ApiResponse.success(201, "Create device successfully", new DeviceResponse(device));
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PostMapping("/settings")
     public ResponseEntity<ApiResponse<DeviceSettingResponse>> createDeviceSettings(DeviceSettingRequest deviceSettingRequest) {
 
@@ -113,10 +123,10 @@ public class DeviceController {
 
         DeviceSetting deviceSetting = deviceService.createDeviceSetting(deviceId, userId);
 
-        return ApiResponse.success(200, "Update device settings successfully", new DeviceSettingResponse(deviceSetting));
+        return ApiResponse.success(201, "Update device settings successfully", new DeviceSettingResponse(deviceSetting));
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PostMapping("/settings/post-config")
     public ResponseEntity<ApiResponse<PostConfigResponse>> createPostConfig(DeviceSettingRequest deviceSettingRequest) {
 
@@ -126,7 +136,7 @@ public class DeviceController {
 
         PostConfig postConfig = deviceService.createNewPostConfig(deviceId, userId);
 
-        return ApiResponse.success(200, "Update device settings successfully", new PostConfigResponse(postConfig));
+        return ApiResponse.success(201, "Update device settings successfully", new PostConfigResponse(postConfig));
     }
 
     @PreAuthorize("@userService.member")
@@ -139,20 +149,20 @@ public class DeviceController {
 
         CommentWalkConfig commentWalkConfig = deviceService.createNewCommentWalkConfig(deviceId, userId);
 
-        return ApiResponse.success(200, "Update device settings successfully", new CommentWalkConfigResponse(commentWalkConfig));
+        return ApiResponse.success(201, "Update device settings successfully", new CommentWalkConfigResponse(commentWalkConfig));
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PostMapping("/sync-device-setting")
     public ResponseEntity<ApiResponse<DeviceSettingResponse>> syncDeviceData(@Valid @RequestBody RequestModels.DeviceSyncDataRequest syncDataRequest) {
 
         String userId = SecurityContextUtils.getUserIdFromContext();
         DeviceSettingResponse syncedDeviceSettingResponse = deviceService.syncDeviceSetting(userId, syncDataRequest);
 
-        return ApiResponse.success(200, "Sync device data successfully", syncedDeviceSettingResponse);
+        return ApiResponse.success(201, "Sync device data successfully", syncedDeviceSettingResponse);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<DeviceResponse>> updateDevice(@PathVariable String id, @Validated(OnUpdate.class) @RequestBody DeviceRequest deviceRequest) {
 
@@ -166,10 +176,10 @@ public class DeviceController {
     public ResponseEntity<ApiResponse<Void>> updateDeviceStatus(@PathVariable String id, @Valid @RequestBody RequestModels.UpdateStatusDeviceRequest request) {
         deviceService.updateStatusDevice(id, DeviceStatus.valueOf(request.status()));
 
-        return ApiResponse.success(200, "Update status device successfully", null);
+        return ApiResponse.success(204, "Update status device successfully", null);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PatchMapping("/settings")
     public ResponseEntity<ApiResponse<DeviceSettingRequest>> updateDeviceSetting(@Valid @RequestBody DeviceSettingRequest deviceSettingRequest) {
 
@@ -180,7 +190,7 @@ public class DeviceController {
         return ApiResponse.success(200, "Update device settings successfully", deviceSettingRequest);
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PatchMapping("/settings/post-config")
     public ResponseEntity<ApiResponse<PostConfigResponse>> updatePostConfig(@Valid @RequestBody PostConfigRequest postConfigRequest) {
 
@@ -202,13 +212,11 @@ public class DeviceController {
         return ApiResponse.success(200, "Update comment walk config successfully", new CommentWalkConfigResponse(commentWalkConfigRequest));
     }
 
-    @PreAuthorize("principal.enabled")
+    @PreAuthorize("@userService.enabled")
     @PatchMapping("/settings/{device_id}/change-status-tool")
     public ResponseEntity<ApiResponse<PostConfigResponse>> changeStatusTool(@PathVariable String device_id, @Valid @RequestBody RequestModels.ChangeStatusTool request) {
 
         String userId = SecurityContextUtils.getUserIdFromContext();
-
-        System.out.println(request.toString());
 
         deviceService.changeStatusTool(userId, device_id, request);
 
@@ -218,7 +226,7 @@ public class DeviceController {
             msg = "Turn off tool successfully";
         }
 
-        return ApiResponse.success(200, msg, null);
+        return ApiResponse.success(204, msg, null);
 
     }
 
@@ -234,12 +242,23 @@ public class DeviceController {
 
     }
 
+    @PreAuthorize("@userService.enabled")
+    @PatchMapping("/settings/update-is-changed/{deviceId}")
+    public ResponseEntity<ApiResponse<Boolean>> updateIsChanged(@PathVariable String deviceId, @Valid @RequestBody RequestModels.UpdateIsChangedRequest request) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        Boolean success = deviceService.updateDeviceSettingChanged(userId, deviceId, request.changed());
+
+        return ApiResponse.success(200, "Update changed successfully", success);
+    }
+
     //maybe dont need
     @PreAuthorize("@userService.admin")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteDevice(@PathVariable String id) {
         deviceService.deleteDevice(id);
-        return ApiResponse.success(200, "Delete device successfully", null);
+        return ApiResponse.success(204, "Delete device successfully", null);
     }
 
 
@@ -277,7 +296,7 @@ public class DeviceController {
 
         Boolean success = deviceService.updateDeviceStatusSetting(request);
 
-        return ApiResponse.success(200, "Update status device setting successfully", success);
+        return ApiResponse.success(204, "Update status device setting successfully", success);
     }
 
 

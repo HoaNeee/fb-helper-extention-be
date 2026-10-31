@@ -58,7 +58,7 @@ public class CommentPostController {
 
         CommentPost commentPost = commentPostService.createNewCommentPostForUser(userId);
         commentPost.setUser(null);
-        return ApiResponse.success(200, "Comment post created successfully", commentPost);
+        return ApiResponse.success(201, "Comment post created successfully", commentPost);
     }
 
     @PatchMapping

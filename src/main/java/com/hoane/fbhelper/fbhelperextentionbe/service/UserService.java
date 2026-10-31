@@ -133,7 +133,7 @@ public class UserService {
                 throw new ConflictException("Username already exists");
             }
         }
-        
+
         user.setRole(role);
         user.setStatus(status);
         user.setEmail(email);
@@ -229,6 +229,15 @@ public class UserService {
         u.setIsDeleted(true);
         userRepository.save(u);
         return true;
+    }
+
+    public boolean isEnabled() {
+        String userId = SecurityContextUtils.getUserIdFromContext();
+        if (userId == null || userId.isEmpty()) {
+            return false;
+        }
+        User u = findByIdOrThrow(userId);
+        return u.isActive();
     }
 
     private boolean isExistedEmail(String email) {

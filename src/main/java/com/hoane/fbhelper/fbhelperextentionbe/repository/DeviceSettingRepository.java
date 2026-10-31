@@ -6,6 +6,7 @@ import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -26,4 +27,13 @@ public interface DeviceSettingRepository extends JpaRepository<DeviceSetting, In
     List<DeviceSetting> findAllByListDeviceId(List<String> ids);
 
     Integer countByStatusAndDevice_Id(DeviceSettingStatus status, String deviceId);
+
+
+    @Modifying
+    @Query(value = "UPDATE DeviceSetting SET isChanged = :changed WHERE user.id = :userId")
+    void updateAllChangedByUserId(String userId, Boolean changed);
+
+    @Modifying
+    @Query(value = "UPDATE device_settings SET is_changed = :changed WHERE device_id IN :deviceIds AND user_id = :userId", nativeQuery = true)
+    void updateAllChangedByListDeviceIdAndUserId(List<String> deviceIds, String userId, Boolean changed);
 }

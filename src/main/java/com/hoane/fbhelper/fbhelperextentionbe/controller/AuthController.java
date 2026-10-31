@@ -1,5 +1,6 @@
 package com.hoane.fbhelper.fbhelperextentionbe.controller;
 
+import com.hoane.fbhelper.fbhelperextentionbe.dto.response.RegisterResponse;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import com.hoane.fbhelper.fbhelperextentionbe.dto.request.LoginRequest;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,8 +28,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest registerRequest) {
-        return ApiResponse.success(201, "User registered successfully", null);
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@RequestBody RegisterRequest registerRequest) {
+        RegisterResponse response = authService.register(registerRequest);
+        return ApiResponse.success(201, "User registered successfully", response);
     }
 
     @PostMapping("/verify-token")
@@ -38,7 +39,7 @@ public class AuthController {
 
         Boolean isTokenValid = authService.verifyToken(verifyTokenRequest, ipAddress);
 
-        return ApiResponse.success(201, "Verify token successfully", isTokenValid);
+        return ApiResponse.success(200, "Verify token successfully", isTokenValid);
     }
 
 

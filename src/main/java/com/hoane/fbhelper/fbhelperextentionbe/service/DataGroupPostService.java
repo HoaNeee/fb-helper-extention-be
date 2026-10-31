@@ -62,7 +62,7 @@ public class DataGroupPostService {
         List<String> ids = dataGroupPosts.stream().map(DataGroupPost::getId).toList();
 
 
-        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostDetailRepository.findAllByListDataGroupPostId(ids);
+        List<DataGroupPostDetail> dataGroupPostDetails = dataGroupPostDetailRepository.findAllByListDataGroupPostIdAndDeviceId(ids, device_id);
 
         List<DataGroupPostResponse.DataGroupResponse> list = dataGroupPosts.stream()
                 .map(dataGroupPost -> {
@@ -140,12 +140,15 @@ public class DataGroupPostService {
     @Transactional
     public void delete(String id) {
 
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
         isUserAllowed(id);
 
         dataGroupPostDetailRepository.deleteAllByDataGroupPost_Id(id);
 
-        dataGroupPostRepository.delete(dataGroupPostRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("DataGroupPost", "Data group post not found")));
+        dataGroupPostRepository.delete(findDataGroupPostByIdOrThrow(id));
+
+        deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
     @Transactional
@@ -154,6 +157,8 @@ public class DataGroupPostService {
         dataGroupPostDetailRepository.deleteAllByUser_Id(userId);
 
         dataGroupPostRepository.deleteAllByUser_Id(userId);
+
+        deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
 
@@ -184,25 +189,29 @@ public class DataGroupPostService {
     @Transactional
     public DataGroupPostDetail updateDataGroupPostDetail(DataGroupPostRequest.DataGroupPostDetailRequest dataGroupPostDetailRequest) {
 
-        DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetail(dataGroupPostDetailRequest.getDeviceId(), dataGroupPostDetailRequest.getDataGroupPostId());
+        String userId = SecurityContextUtils.getUserIdFromContext();
+        String deviceId = dataGroupPostDetailRequest.getDeviceId();
 
-        if (dataGroupPostDetail == null) {
-            dataGroupPostDetail = DataGroupPostDetail.builder()
-                    .device(deviceService.findByIdOrThrow(dataGroupPostDetailRequest.getDeviceId()))
-                    .dataGroupPost(findDataGroupPostByIdOrThrow(dataGroupPostDetailRequest.getDataGroupPostId()))
-                    .isActive(dataGroupPostDetailRequest.getIsActive())
-                    .build();
-        } else {
-            dataGroupPostDetail.setIsActive(dataGroupPostDetailRequest.getIsActive());
-        }
+        DataGroupPostDetail dataGroupPostDetail = findOrCreateDataGroupPostDetail(dataGroupPostDetailRequest.getDeviceId(), dataGroupPostDetailRequest.getDataGroupPostId());
 
+        dataGroupPostDetail.setIsActive(dataGroupPostDetailRequest.getIsActive());
+
+        deviceService.updateDeviceSettingChangedFromWeb(userId, deviceId, true);
 
         return dataGroupPostDetailRepository.save(dataGroupPostDetail);
     }
 
-    public DataGroupPostDetail findDataGroupPostDetail(String device_id, String data_group_id) {
+    public DataGroupPostDetail findOrCreateDataGroupPostDetail(String device_id, String data_group_id) {
 
-        return dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(device_id, data_group_id);
+        DataGroupPostDetail dataGroupPostDetail = dataGroupPostDetailRepository.findByDevice_IdAndDataGroupPost_Id(device_id, data_group_id);
+        if (dataGroupPostDetail == null) {
+            dataGroupPostDetail = DataGroupPostDetail.builder()
+                    .device(deviceService.findByIdOrThrow(device_id))
+                    .dataGroupPost(findDataGroupPostByIdOrThrow(data_group_id))
+                    .isActive(false)
+                    .build();
+        }
+        return dataGroupPostDetail;
     }
 
     public DataGroupPostDetail findDataGroupPostDetailOrThrow(String device_id, String data_group_id) {
@@ -264,17 +273,14 @@ public class DataGroupPostService {
         Boolean isActive = dataGroupPostUpdateStatusAllDeviceRequest.getIsActive();
 
         devices.forEach(device -> {
-            DataGroupPostDetail dataGroupPostDetail = findDataGroupPostDetail(device.getId(), dataGroupPostId);
-            if (dataGroupPostDetail != null) {
-                dataGroupPostDetail.setIsActive(isActive);
-            } else {
-                dataGroupPostDetail = new DataGroupPostDetail();
-                dataGroupPostDetail.setDevice(device);
-                dataGroupPostDetail.setDataGroupPost(dataGroupPost);
-                dataGroupPostDetail.setIsActive(isActive);
-            }
+            DataGroupPostDetail dataGroupPostDetail = findOrCreateDataGroupPostDetail(device.getId(), dataGroupPostId);
+
+            dataGroupPostDetail.setIsActive(isActive);
+
             dataGroupPostDetailRepository.save(dataGroupPostDetail);
         });
+
+        deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
     @Transactional
@@ -311,6 +317,8 @@ public class DataGroupPostService {
                 dataGroupPostDetailRepository.save(existingDetail);
             }
         });
+
+        deviceService.updateDeviceSettingChangedFromWeb(userId, currentDeviceId, true);
 
         return true;
     }

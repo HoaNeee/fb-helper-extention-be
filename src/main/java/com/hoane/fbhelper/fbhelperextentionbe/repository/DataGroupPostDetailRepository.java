@@ -26,7 +26,6 @@ public interface DataGroupPostDetailRepository extends JpaRepository<DataGroupPo
     @Query(value = "UPDATE data_group_post_details SET is_active = :isActive WHERE data_group_post_id = :dataGroupPostId", nativeQuery = true)
     void updateStatusAllDeviceByUserAndDataGroupPost(String dataGroupPostId, boolean isActive);
 
-    @Modifying
-    @Query(value = "SELECT d.* FROM data_group_post_details d WHERE d.data_group_post_id IN :ids", nativeQuery = true)
-    List<DataGroupPostDetail> findAllByListDataGroupPostId(List<String> ids);
+    @Query(value = "SELECT d FROM DataGroupPostDetail d WHERE d.dataGroupPost.id IN :ids AND d.device.id = :deviceId")
+    List<DataGroupPostDetail> findAllByListDataGroupPostIdAndDeviceId(List<String> ids, String deviceId);
 }

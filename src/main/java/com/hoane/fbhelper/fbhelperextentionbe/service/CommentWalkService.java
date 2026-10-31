@@ -174,7 +174,11 @@ public class CommentWalkService {
                 commentWalkDetail.setIsActive(isActive);
                 commentWalkDetailRepository.save(commentWalkDetail);
             }
+
+            deviceService.updateDeviceSettingChangedFromWeb(userId, device.getId(), true);
         });
+
+
     }
 
     @Transactional
@@ -221,11 +225,15 @@ public class CommentWalkService {
     @Transactional
     public void delete(String id) {
 
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
         isUserAllowed(id);
 
         commentWalkDetailRepository.deleteAllByCommentWalk_Id(id);
 
         commentWalkRepository.delete(findCommentWalkByIdOrThrow(id));
+
+        deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
     @Transactional
@@ -234,6 +242,8 @@ public class CommentWalkService {
         commentWalkDetailRepository.deleteAllByUser_Id(userId);
 
         commentWalkRepository.deleteAllByUser_Id(userId);
+        
+        deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
 
@@ -262,23 +272,29 @@ public class CommentWalkService {
 
 
     @Transactional
-    public CommentWalkDetail updateCommentWalkDetail(CommentWalkRequest.CommentWalkDetailRequest commentWalkDetailRequest) {
+    public CommentWalkDetail updateOrCreateCommentWalkDetail(CommentWalkRequest.CommentWalkDetailRequest commentWalkDetailRequest) {
 
         String commentWalkId = commentWalkDetailRequest.getCommentWalkId();
+        String deviceId = commentWalkDetailRequest.getDeviceId();
+        String userId = SecurityContextUtils.getUserIdFromContext();
 
         isUserAllowed(commentWalkId);
 
         CommentWalkDetail commentWalkDetail = findCommentWalkDetail(commentWalkId, commentWalkDetailRequest.getCommentWalkId());
 
+        Device device = deviceService.findByIdOrThrow(deviceId);
+
         if (commentWalkDetail == null) {
             commentWalkDetail = CommentWalkDetail.builder()
-                    .device(deviceService.findByIdOrThrow(commentWalkDetailRequest.getDeviceId()))
+                    .device(device)
                     .commentWalk(findCommentWalkByIdOrThrow(commentWalkDetailRequest.getCommentWalkId()))
                     .isActive(commentWalkDetailRequest.getIsActive())
                     .build();
         } else {
             commentWalkDetail.setIsActive(commentWalkDetailRequest.getIsActive());
         }
+
+        deviceService.updateDeviceSettingChangedFromWeb(userId, deviceId, true);
 
 
         return commentWalkDetailRepository.save(commentWalkDetail);
@@ -301,7 +317,6 @@ public class CommentWalkService {
 
         List<CommentWalk> commentWalkList = commentWalkRepository.findAllByUser_Id(userId);
 
-
         commentWalkList.forEach(comment -> {
             CommentWalkDetail targetDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(targetDeviceId, comment.getId(), targetCommentWalkDetails);
             CommentWalkDetail existingDetail = findCommentWalkDetailByDeviceIdAndCommentWalkIdWithList(currentDeviceId, comment.getId(), commentWalkDetails);
@@ -323,6 +338,8 @@ public class CommentWalkService {
                 commentWalkDetailRepository.save(existingDetail);
             }
         });
+
+        deviceService.updateDeviceSettingChangedFromWeb(userId, currentDeviceId, true);
 
         return true;
     }

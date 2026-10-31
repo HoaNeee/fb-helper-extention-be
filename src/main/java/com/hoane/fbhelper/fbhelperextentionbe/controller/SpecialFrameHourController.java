@@ -20,11 +20,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/special-frame-hours")
-@PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
+@PreAuthorize("@userService.member")
 public class SpecialFrameHourController {
     @Autowired
     private SpecialFrameHourService specialFrameHourService;
-
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SpecialFrameHourResponse>>> getSpecialFrameHoursByUser() {
@@ -53,7 +52,7 @@ public class SpecialFrameHourController {
 
         SpecialFrameHour specialFrameHour = specialFrameHourService.createSpecialFrameHour(user_id, specialFrameRequest);
 
-        return ApiResponse.success(200, "Create special frame hour success", new SpecialFrameHourResponse(specialFrameHour));
+        return ApiResponse.success(201, "Create special frame hour success", new SpecialFrameHourResponse(specialFrameHour));
     }
 
     @PatchMapping("/{special_frame_hour_id}")
@@ -69,7 +68,7 @@ public class SpecialFrameHourController {
 
         specialFrameHourService.updateStatusSpecialFrameHour(special_frame_hour_id, specialFrameSettingRequest);
 
-        return ApiResponse.success(200, "Update special frame hour status success", null);
+        return ApiResponse.success(204, "Update special frame hour status success", null);
     }
 
     @PatchMapping("/update-status-all-device/{special_frame_hour_id}")
@@ -77,7 +76,7 @@ public class SpecialFrameHourController {
 
         specialFrameHourService.updateStatusSpecialFrameHourAllDevice(special_frame_hour_id, request);
 
-        return ApiResponse.success(200, "Update special frame hour status  all device success", null);
+        return ApiResponse.success(204, "Update special frame hour status  all device success", null);
     }
 
     @DeleteMapping("/{special_frame_hour_id}")
@@ -85,7 +84,7 @@ public class SpecialFrameHourController {
 
         specialFrameHourService.deleteSpecialFrameHour(special_frame_hour_id);
 
-        return ApiResponse.success(200, "Delete special frame hour success", null);
+        return ApiResponse.success(204, "Delete special frame hour success", null);
     }
 
     @DeleteMapping("/delete-all")
@@ -94,6 +93,6 @@ public class SpecialFrameHourController {
         String userId = SecurityContextUtils.getUserIdFromContext();
 
         specialFrameHourService.clearAllSpecialFrameHour(userId);
-        return ApiResponse.success(200, "Delete all special frame hours success", null);
+        return ApiResponse.success(204, "Delete all special frame hours success", null);
     }
 }

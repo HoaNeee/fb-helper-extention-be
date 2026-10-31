@@ -26,7 +26,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceSetting {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -63,6 +62,8 @@ public class DeviceSetting {
     private Integer priorityTaskCommentWalk = Constant.PRIORITY_TASK_COMMENT_WALK;
 
     private Boolean isRemoteControl = false;
+
+    private Boolean isChanged = false;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

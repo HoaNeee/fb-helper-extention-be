@@ -1,6 +1,7 @@
 package com.hoane.fbhelper.fbhelperextentionbe.entity.enums;
 
-public enum LoginLocation {
+public enum RequestPlatform {
     WEB,
-    DEVICE
+    DEVICE,
+    ADMIN
 }

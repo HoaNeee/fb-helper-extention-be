@@ -5,12 +5,14 @@ import com.hoane.fbhelper.fbhelperextentionbe.dto.response.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.*;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceSettingStatus;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.DeviceStatus;
+import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.RequestPlatform;
 import com.hoane.fbhelper.fbhelperextentionbe.entity.enums.Role;
 import com.hoane.fbhelper.fbhelperextentionbe.exception.ResourceNotFoundException;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.CommentWalkConfigRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.DeviceSettingRepository;
 import com.hoane.fbhelper.fbhelperextentionbe.repository.PostConfigRepository;
+import com.hoane.fbhelper.fbhelperextentionbe.utils.MyRequestContext;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.SecurityContextUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -273,11 +275,26 @@ public class DeviceService {
 
         deviceSettingRequest.setDeviceId(null);
 
+        if (deviceSettingRequest.getStatus() != null) {
+            DeviceSettingStatus status = deviceSettingRequest.getStatusEnum();
+            if (!status.equals(existingSetting.getStatus()) && !user.isAdmin()) {
+                throw new AuthorizationDeniedException("You are not allowed to change the status of the device setting");
+            }
+
+            existingSetting.setStatus(status);
+            deviceSettingRequest.setStatus(null);
+        }
+
         modelMapper.map(deviceSettingRequest, existingSetting);
 
         if (!canUpdateSetting(deviceSettingRequest, user)) {
             Role role = user.getRole();
             throw new AuthorizationDeniedException("User with role " + role + " is not allowed to update device settings with isRandomBreakBatch or isSpecialFrameHours set to true");
+        }
+
+        RequestPlatform requestPlatform = MyRequestContext.getRequestPlatform();
+        if (requestPlatform.equals(RequestPlatform.WEB)) {
+            existingSetting.setIsChanged(true);
         }
 
         deviceSettingRepository.save(existingSetting);
@@ -304,6 +321,8 @@ public class DeviceService {
         modelMapper.map(postConfigRequest, existingPostConfig);
 
         postConfigRepository.save(existingPostConfig);
+
+        this.updateDeviceSettingChangedFromWeb(userId, device_id, true);
     }
 
     @Transactional
@@ -316,6 +335,9 @@ public class DeviceService {
         modelMapper.map(commentWalkConfigRequest, existingCommentWalkConfig);
 
         commentWalkConfigRepository.save(existingCommentWalkConfig);
+
+        this.updateDeviceSettingChangedFromWeb(userId, device_id, true);
+
     }
 
     @Transactional
@@ -323,6 +345,12 @@ public class DeviceService {
         DeviceSetting deviceSetting = findDeviceSettingByDeviceIdAndUserIdOrThrow(deviceId, userId);
 
         deviceSetting.setIsStopTask(request.isStopTask());
+
+        RequestPlatform requestPlatform = MyRequestContext.getRequestPlatform();
+        if (requestPlatform.equals(RequestPlatform.WEB)) {
+            deviceSetting.setIsChanged(true);
+        }
+
         deviceSettingRepository.save(deviceSetting);
     }
 
@@ -383,6 +411,11 @@ public class DeviceService {
         }
 
         BeanUtils.copyProperties(targetDeviceSetting, currentDeviceSetting, "id", "device", "user");
+
+        RequestPlatform requestPlatform = MyRequestContext.getRequestPlatform();
+        if (requestPlatform.equals(RequestPlatform.WEB)) {
+            currentDeviceSetting.setIsChanged(true);
+        }
 
         DeviceSetting newDevicesetting = deviceSettingRepository.save(currentDeviceSetting);
 
@@ -452,6 +485,7 @@ public class DeviceService {
         deviceRepository.save(device);
     }
 
+    @Transactional
     public Boolean updateDeviceStatusSetting(RequestModels.UpdateStatusDeviceSettingRequest request) {
         String deviceId = request.deviceId();
         String userId = request.userId();
@@ -463,6 +497,30 @@ public class DeviceService {
 
         return true;
     }
+
+    @Transactional
+    public Boolean updateDeviceSettingChanged(String userId, String deviceId, Boolean changed) {
+        DeviceSetting deviceSetting = getOrCreateDeviceSettingByDeviceIdAndUserId(deviceId, userId);
+        if (deviceSetting.getIsRemoteControl()) {
+            deviceSetting.setIsChanged(changed);
+            deviceSettingRepository.save(deviceSetting);
+        }
+        return true;
+    }
+
+    @Transactional
+    public void updateDeviceSettingChangedFromWeb(String userId, String deviceId, Boolean changed) {
+        RequestPlatform requestPlatform = MyRequestContext.getRequestPlatform();
+        if (requestPlatform.equals(RequestPlatform.WEB)) {
+            updateDeviceSettingChanged(userId, deviceId, changed);
+        }
+
+    }
+
+    public void updateAllDeviceSettingChangedByUserId(String userId, Boolean changed) {
+        deviceSettingRepository.updateAllChangedByUserId(userId, changed);
+    }
+
 
     private boolean canUpdateSetting(DeviceSettingRequest request, User user) {
         if (!user.isMember()) {

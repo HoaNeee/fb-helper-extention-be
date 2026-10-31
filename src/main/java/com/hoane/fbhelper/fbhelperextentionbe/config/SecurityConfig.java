@@ -2,7 +2,12 @@ package com.hoane.fbhelper.fbhelperextentionbe.config;
 
 import com.hoane.fbhelper.fbhelperextentionbe.exception.CustomAuthenticationEntryPoint;
 import com.hoane.fbhelper.fbhelperextentionbe.filter.JwtAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +22,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -29,6 +33,9 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationEntryPoint authenticationEntryPoint;
 
+    @Value("${app.env}")
+    private String ENV;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -36,21 +43,23 @@ public class SecurityConfig {
 
         http
                 .cors(cors -> cors.configurationSource(request -> {
-                            CorsConfiguration corsConfiguration = new CorsConfiguration();
-                            corsConfiguration.addAllowedOrigin("*");
-                            corsConfiguration.addAllowedHeader("*");
-                            corsConfiguration.addAllowedMethod("*");
-                            return corsConfiguration;
-                        })
-                )
+                    CorsConfiguration corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.addAllowedOrigin("*");
+                    corsConfiguration.addAllowedHeader("*");
+                    corsConfiguration.addAllowedMethod("*");
+                    return corsConfiguration;
+                }))
                 .csrf(c -> c.disable())
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(prefix + "/auth/**",
-                                        prefix + "/api-docs/**", prefix + "/docs/**",
-                                        "/swagger-ui/**", "/docs/**",
+                .authorizeHttpRequests(auth -> auth.requestMatchers(prefix + "/auth/**",
+                                        prefix + "/api-docs/**",
+                                        prefix + "/docs/**",
+                                        "/swagger-ui/**",
+                                        "/docs/**",
                                         prefix + "/system-setting/**",
                                         prefix + "/devices/**",
-                                        prefix + "/ip-addresses/**"
+                                        prefix + "/ip-addresses/**",
+                                        prefix + "/ping"
+
                                 ).permitAll()
                                 .requestMatchers("/uploads/**")
                                 .permitAll()

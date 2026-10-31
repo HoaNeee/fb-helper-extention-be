@@ -44,7 +44,8 @@ public class RequestModels {
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record ChangeStatusTool(
-            @NotNull(message = "Is stop task can not null or empty") Boolean isStopTask
+            @NotNull(message = "Is stop task can not null or empty") Boolean isStopTask,
+            String requestPlatform
     ) {
     }
 
@@ -72,6 +73,12 @@ public class RequestModels {
             @NotBlank(message = "Status can not null or empty") String status,
             @NotBlank(message = "Device ID can not null or empty") String deviceId,
             @NotBlank(message = "User ID can not null or empty") String userId
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateIsChangedRequest(
+            @NotNull(message = "Changed can not null") Boolean changed
     ) {
     }
 

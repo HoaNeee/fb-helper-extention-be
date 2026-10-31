@@ -40,4 +40,7 @@ public class SystemCommentWalkSetting {
     @Column(columnDefinition = "TEXT")
     private List<String> patternUrlPostCommentWalks = Constant.PATTERN_URL_POST_COMMENT_WALKS;
 
+    private String apiKeyFreeGoogleAI;
+
+    private String apiKeyPaidGoogleAI;
 }

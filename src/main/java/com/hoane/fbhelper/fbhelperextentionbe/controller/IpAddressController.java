@@ -65,6 +65,6 @@ public class IpAddressController {
 
         ipAddressService.updateStatusIpAddress(request.ipAddress(), request.status());
 
-        return ApiResponse.success(200, "Update status IP address successfully", null);
+        return ApiResponse.success(204, "Update status IP address successfully", null);
     }
 }

@@ -55,4 +55,9 @@ public class RequestUtils {
         RequestUtils.IP_DEFAULT = ipDefault;
     }
 
+
+    public static String getDeviceId(HttpServletRequest request) {
+        return request.getHeader("X-Device-Id");
+    }
+
 }

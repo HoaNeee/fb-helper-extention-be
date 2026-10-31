@@ -87,6 +87,12 @@ public class GlobalExceptionHandler {
         return ApiResponse.fail(404, "Resource not found", errs, ApiResponseCode.NOT_FOUND);
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleUserNotFound(UserNotFoundException exception) {
+
+        return ApiResponse.fail(404, "User Not Found");
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiResponse<?>> handleConflict(ConflictException exception) {
 
@@ -105,7 +111,7 @@ public class GlobalExceptionHandler {
         errs.put(exception.getName(), exception.getMessage());
         return ApiResponse.fail(409, "Resource was exist", errs);
     }
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidationErrors(MethodArgumentNotValidException exception) {
         Map<String, String> errs = new HashMap<>();

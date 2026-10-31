@@ -50,7 +50,7 @@ public class InteractBeforePostController {
 
         InteractBeforePost interactBeforePost = interactBeforePostService.createInteractBeforePostForUser(userId);
         interactBeforePost.setUser(null);
-        return ApiResponse.success(200, "Interact before post created successfully", interactBeforePost);
+        return ApiResponse.success(201, "Interact before post created successfully", interactBeforePost);
     }
 
     @PatchMapping

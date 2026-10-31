@@ -110,7 +110,7 @@ public class DataGroupPostController {
         List<DataGroupPost> dataGroupPosts = dataGroupPostService.importDataGroupPost(userId, request);
         List<DataGroupPostResponse.DataGroupResponse> listResponse = dataGroupPosts.stream().map(DataGroupPostResponse.DataGroupResponse::new).toList();
 
-        return ApiResponse.success(200, "Import data group posts successfully", listResponse);
+        return ApiResponse.success(201, "Import data group posts successfully", listResponse);
     }
 
     @PostMapping("/sync-device-data-group-post")
@@ -138,7 +138,7 @@ public class DataGroupPostController {
 
         dataGroupPostService.updateStatusAllDevice(userId, id, request);
 
-        return ApiResponse.success(200, "Update status all device successfully", null);
+        return ApiResponse.success(204, "Update status all device successfully", null);
     }
 
     @DeleteMapping("{id}")
@@ -146,7 +146,7 @@ public class DataGroupPostController {
 
         dataGroupPostService.delete(id);
 
-        return ApiResponse.success(200, "Delete data group post successfully", null);
+        return ApiResponse.success(204, "Delete data group post successfully", null);
     }
 
     @DeleteMapping("/delete-all-data-group-post")
@@ -156,7 +156,7 @@ public class DataGroupPostController {
 
         dataGroupPostService.deleteAll(userId);
 
-        return ApiResponse.success(200, "Delete all data group post by user successfully", null);
+        return ApiResponse.success(204, "Delete all data group post by user successfully", null);
     }
 
 

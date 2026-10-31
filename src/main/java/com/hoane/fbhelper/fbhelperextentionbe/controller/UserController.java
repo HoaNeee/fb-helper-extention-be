@@ -84,7 +84,7 @@ public class UserController {
 
         userService.changePassword(userId, userChangePasswordRequest);
 
-        return ApiResponse.success(200, "Change password success", null);
+        return ApiResponse.success(204, "Change password success", null);
     }
 
     @PreAuthorize("@userService.admin")
@@ -112,7 +112,7 @@ public class UserController {
     @PostMapping("/admin/create-user")
     public ResponseEntity<ApiResponse<UserDetailsResponse>> adminCreateNewUser(@Valid @RequestBody UserRequest.CreateUserRequest request) {
         User u = userService.create(request);
-        return ApiResponse.success(200, "Create user by admin success", new UserDetailsResponse(u));
+        return ApiResponse.success(201, "Create user by admin success", new UserDetailsResponse(u));
     }
 
     @PreAuthorize("@userService.admin")
@@ -146,7 +146,7 @@ public class UserController {
 
         Boolean success = userService.deleteUser(userId);
 
-        return ApiResponse.success(200, "Delete user success", success);
+        return ApiResponse.success(204, "Delete user success", success);
     }
 
 
