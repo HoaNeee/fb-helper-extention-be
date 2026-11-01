@@ -79,7 +79,7 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
 
-        RequestPlatform loginPlatform = Utils.getRequestPlatform(null);
+        RequestPlatform requestPlatform = MyRequestContext.getRequestPlatform();
 
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
@@ -90,7 +90,7 @@ public class AuthService {
         }
 
 
-        if (loginPlatform.equals(RequestPlatform.DEVICE) || loginPlatform.equals(RequestPlatform.WEB)) {
+        if (requestPlatform.equals(RequestPlatform.DEVICE) || requestPlatform.equals(RequestPlatform.WEB)) {
             if (userDetails.isSuperAdmin()) {
                 throw new UserNotFoundException("User not found");
             }
@@ -100,7 +100,7 @@ public class AuthService {
             handleForNewUser(userDetails.getId());
         }
 
-        if (ipAddress != null && loginPlatform.equals(RequestPlatform.DEVICE)) {
+        if (ipAddress != null && requestPlatform.equals(RequestPlatform.DEVICE)) {
             ipAddressService.findByIpAddressOrCreate(ipAddress);
         }
 
@@ -108,7 +108,7 @@ public class AuthService {
 
         LoginResponse response = new LoginResponse(token, userDetails.getId(), userDetails.getUsername(), userDetails.getUserStatus());
 
-        if (loginPlatform.equals(RequestPlatform.ADMIN) && !userDetails.isAdmin()) {
+        if (requestPlatform.equals(RequestPlatform.ADMIN) && !userDetails.isAdmin()) {
             throw new UserNotFoundException("User not found");
         }
 
