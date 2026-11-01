@@ -38,6 +38,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/fb_helper_extension?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SERVER_FORWARD_HEADERS_STRATEGY: ${SERVER_FORWARD_HEADERS_STRATEGY:-native}
 
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO}
       SPRING_JPA_SHOW_SQL: "false"

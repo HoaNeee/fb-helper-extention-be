@@ -2,6 +2,7 @@ package com.hoane.fbhelper.fbhelperextentionbe.service;
 
 
 import com.hoane.fbhelper.fbhelperextentionbe.constant.Constant;
+import com.hoane.fbhelper.fbhelperextentionbe.exception.MediaException;
 import com.hoane.fbhelper.fbhelperextentionbe.utils.IdGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.print.attribute.standard.Media;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,14 +26,14 @@ public class FileService {
     @Value("${app.upload.dir}")
     private String UPLOAD_DIR;
 
-    private List<String> PREFIX_FILE_NAME = List.of("avt", "dgp", "cw");
+    private final List<String> PREFIX_FILE_NAME = List.of("avt", "dgp", "cw");
 
-    private String ADD_FOR_FILE_NAME_STR = "_";
+    private final String ADD_FOR_FILE_NAME_STR = "_";
 
     public String storeFileHelper(MultipartFile file, HttpServletRequest request) throws IOException {
         try {
             if (file.isEmpty()) {
-                throw new RuntimeException("File trống, không thể lưu trữ!");
+                throw new MediaException("File trống, không thể lưu trữ!");
             }
 
             String prefixFileName = getPrefixFileName(file.getOriginalFilename());
@@ -81,7 +83,7 @@ public class FileService {
 
             return hostLink;
         } catch (IOException e) {
-            throw new RuntimeException("Lỗi trong quá trình lưu file: " + e.getMessage());
+            throw new MediaException("Lỗi trong quá trình lưu file: " + e.getMessage());
         }
     }
 
@@ -89,7 +91,7 @@ public class FileService {
         try {
             return storeFileHelper(file, request);
         } catch (Exception e) {
-            throw new RuntimeException("Could not store file: " + e.getMessage());
+            throw new MediaException("Could not store file: " + e.getMessage());
         }
 
     }
@@ -105,7 +107,7 @@ public class FileService {
             return fileLinks;
 
         } catch (IOException e) {
-            throw new RuntimeException("Lỗi trong quá trình lưu file: " + e.getMessage());
+            throw new MediaException("Lỗi trong quá trình lưu file: " + e.getMessage());
         }
     }
 

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import javax.print.attribute.standard.Media;
 import javax.security.auth.login.AccountLockedException;
 import java.util.HashMap;
 import java.util.Map;
@@ -154,6 +155,15 @@ public class GlobalExceptionHandler {
         errs.put("error", message);
         return ApiResponse.fail(400, "Bad request", errs);
     }
+
+    @ExceptionHandler(MediaException.class)
+    public ResponseEntity<ApiResponse<?>> handleMediaException(MediaException exception) {
+        Map<String, String> errs = new HashMap<>();
+        String message = exception.getMessage();
+        errs.put("error", message);
+        return ApiResponse.fail(400, "Media Error", errs);
+    }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<?>> handleErrors(RuntimeException exception) {
