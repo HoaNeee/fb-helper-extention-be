@@ -46,7 +46,7 @@ public class Constant {
     public static final int MAX_RATE_VALUE_CONTENT_QUERY_INCLUDES_COMMENT_WALK_RECOMMEND = 1;
     public static final String COMMENT_WALK_AREA = "RANDOM";
     public static final String COMMENT_WALK_SPEED = "NORMAL";
-    
+
     //setting
     public static final String APP_NAME = "FB Tools Helper";
     public static final String MAIL_SUPPORT = "nhhoa03@gmail.com";
@@ -57,6 +57,9 @@ public class Constant {
 
     public static final String REPLACE_VALUE_PHONE = "0339005642";
     public static final String REPLACE_VALUE_IMAGE = "tel:0339005642";
+
+    public static final Integer COMMENT_AFTER_POST_PERCENT = 25;
+    public static final Integer INTERACT_BEFORE_POST_PRECENT = 20;
 
     public static final List<String> URL_GET_LIST_GROUPS = List.of("https://www.facebook.com/groups/feed/?ref=group_browse");
     public static final List<String> PATTERN_URL_POST_IN_GROUP = List.of("^https:\\/\\/www\\.facebook\\.com\\/groups\\/[a-zA-Z0-9.]+\\/?$");

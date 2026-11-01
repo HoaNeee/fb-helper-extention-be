@@ -239,7 +239,6 @@ public class DeviceController {
         PriorityTask priorityTask = deviceService.updatePriorityTask(userId, device_id, priorityTaskRequest);
 
         return ApiResponse.success(200, "Update priority task success", priorityTask);
-
     }
 
     @PreAuthorize("@userService.enabled")
@@ -250,8 +249,31 @@ public class DeviceController {
 
         Boolean success = deviceService.updateDeviceSettingChanged(userId, deviceId, request.changed());
 
-        return ApiResponse.success(200, "Update changed successfully", success);
+        return ApiResponse.success(204, "Update changed successfully", success);
     }
+
+    @PreAuthorize("@userService.enabled")
+    @PatchMapping("/settings/is-remote-all")
+    public ResponseEntity<ApiResponse<Void>> updateIsRemoteAllDevice(@Valid @RequestBody RequestModels.UpdateIsRemoteAllDevice request) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        deviceService.updateRemoteAllDevice(userId, request.isRemote());
+
+        return ApiResponse.success(204, "Update changed successfully", null);
+    }
+
+    @PreAuthorize("@userService.enabled")
+    @PatchMapping("/settings/is-stop-all")
+    public ResponseEntity<ApiResponse<Void>> updateIsStopAll(@Valid @RequestBody RequestModels.UpdateIsStopAllDevice request) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        deviceService.updateStopAllDeviceByUser(userId, request.isStop());
+
+        return ApiResponse.success(204, "Update status all tool successfully", null);
+    }
+
 
     //maybe dont need
     @PreAuthorize("@userService.admin")

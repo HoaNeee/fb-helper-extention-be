@@ -54,12 +54,5 @@ public class DeviceSettingRequest {
 
     private String status;
 
-    public DeviceSettingStatus getStatusEnum() {
-        try {
-            return DeviceSettingStatus.valueOf(status);
-        } catch (Exception e) {
-            return DeviceSettingStatus.PENDING;
-        }
-    }
 
 }

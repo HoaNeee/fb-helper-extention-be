@@ -82,4 +82,16 @@ public class RequestModels {
     ) {
     }
 
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateIsRemoteAllDevice(
+            @NotNull(message = "isRemote can not null") Boolean isRemote
+    ) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record UpdateIsStopAllDevice(
+            @NotNull(message = "isStop can not null") Boolean isStop
+    ) {
+    }
+
 }

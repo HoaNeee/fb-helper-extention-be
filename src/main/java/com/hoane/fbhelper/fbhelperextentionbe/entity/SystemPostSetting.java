@@ -39,6 +39,10 @@ public class SystemPostSetting {
 
     private String replaceImageValue = Constant.REPLACE_VALUE_IMAGE;
 
+    private Integer commentAfterPostPercent = Constant.COMMENT_AFTER_POST_PERCENT;
+    
+    private Integer interactBeforePostPercent = Constant.INTERACT_BEFORE_POST_PRECENT;
+
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
     private List<String> urlGetListGroups = Constant.URL_GET_LIST_GROUPS;

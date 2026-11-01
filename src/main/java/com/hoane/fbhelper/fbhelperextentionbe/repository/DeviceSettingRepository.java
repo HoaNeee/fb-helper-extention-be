@@ -34,6 +34,14 @@ public interface DeviceSettingRepository extends JpaRepository<DeviceSetting, In
     void updateAllChangedByUserId(String userId, Boolean changed);
 
     @Modifying
+    @Query(value = "UPDATE DeviceSetting SET isRemoteControl = :isRemote WHERE user.id = :userId")
+    void updateRemoteAllDeviceByUserId(String userId, Boolean isRemote);
+
+    @Modifying
+    @Query(value = "UPDATE DeviceSetting SET isStopTask = :isStop WHERE user.id = :userId")
+    void updateIsStopTaskAllDeviceByUserId(String userId, Boolean isStop);
+
+    @Modifying
     @Query(value = "UPDATE device_settings SET is_changed = :changed WHERE device_id IN :deviceIds AND user_id = :userId", nativeQuery = true)
     void updateAllChangedByListDeviceIdAndUserId(List<String> deviceIds, String userId, Boolean changed);
 }

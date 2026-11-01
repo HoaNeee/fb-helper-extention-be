@@ -138,17 +138,20 @@ public class CommentWalkService {
     }
 
     @Transactional
-    public CommentWalkResponse.DataResponse updateCommentWalk(String id, CommentWalkRequest.BaseRequest commentWalkRequest) {
+    public CommentWalk updateCommentWalk(String id, CommentWalkRequest.BaseRequest commentWalkRequest) {
 
         CommentWalk existCommentWalk = findCommentWalkByIdOrThrow(id);
 
         isUserAllowed(existCommentWalk);
 
+        System.out.println("Not work: " + commentWalkRequest.getDescriptionForAi());
+        System.out.println("Not work: " + commentWalkRequest.toString());
+
         modelMapper.map(commentWalkRequest, existCommentWalk);
 
         commentWalkRepository.save(existCommentWalk);
 
-        return new CommentWalkResponse.DataResponse(existCommentWalk);
+        return existCommentWalk;
     }
 
     @Transactional
@@ -242,7 +245,7 @@ public class CommentWalkService {
         commentWalkDetailRepository.deleteAllByUser_Id(userId);
 
         commentWalkRepository.deleteAllByUser_Id(userId);
-        
+
         deviceService.updateAllDeviceSettingChangedByUserId(userId, true);
     }
 
@@ -348,6 +351,12 @@ public class CommentWalkService {
         List<CommentWalkDetail> commentWalkDetails = findAllDetailsByDeviceIdAndUserId(deviceId, userId);
         List<String> list = commentWalkDetails.stream().filter(CommentWalkDetail::getIsActive).map(cwd -> cwd.getCommentWalk().getId()).toList();
         return list;
+    }
+
+    public List<CommentWalk> getListCommentWalkActive(String userId, String deviceId) {
+        List<String> ids = this.getListIdCommentWalkActive(userId, deviceId);
+        List<CommentWalk> commentWalks = commentWalkRepository.findAllById(ids);
+        return commentWalks;
     }
 
 

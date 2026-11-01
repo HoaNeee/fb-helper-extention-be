@@ -30,7 +30,7 @@ public class PostConfigRequest {
     private Integer timeDelayPost;
 
     private Integer timeDelayOpenNewTab;
-    
+
     private Boolean isShuffleGroupNeedPost;
 
     private Boolean isSpammed;

@@ -67,8 +67,20 @@ public class CommentWalkController {
 
         List<String> list = commentWalkService.getListIdCommentWalkActive(userId, deviceId);
 
-        return ApiResponse.success(200, "Get list comment walk active successfully", list);
+        return ApiResponse.success(200, "Get list comment walk active id successfully", list);
     }
+
+
+    @GetMapping("/list-comment-walk-active/{deviceId}")
+    public ResponseEntity<ApiResponse<List<CommentWalkResponse.DataResponse>>> getListCommentWalkActive(@PathVariable String deviceId) {
+
+        String userId = SecurityContextUtils.getUserIdFromContext();
+
+        List<CommentWalk> list = commentWalkService.getListCommentWalkActive(userId, deviceId);
+
+        return ApiResponse.success(200, "Get list comment walk active id successfully", list.stream().map(CommentWalkResponse.DataResponse::new).toList());
+    }
+
 
     @PostMapping
     public ResponseEntity<ApiResponse<CommentWalkResponse.DataResponse>> createCommentWalk(@Validated(OnCreate.class) @RequestBody CommentWalkRequest.BaseRequest request) {
@@ -104,9 +116,9 @@ public class CommentWalkController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<CommentWalkResponse.DataResponse>> updateCommentWalk(@PathVariable String id, @Validated(OnUpdate.class) @RequestBody CommentWalkRequest.BaseRequest request) {
 
-        CommentWalkResponse.DataResponse commentWalk = commentWalkService.updateCommentWalk(id, request);
+        CommentWalk commentWalk = commentWalkService.updateCommentWalk(id, request);
 
-        return ApiResponse.success(200, "Update comment walk successfully", commentWalk);
+        return ApiResponse.success(200, "Update comment walk successfully", new CommentWalkResponse.DataResponse(commentWalk));
     }
 
     @PatchMapping("/details")

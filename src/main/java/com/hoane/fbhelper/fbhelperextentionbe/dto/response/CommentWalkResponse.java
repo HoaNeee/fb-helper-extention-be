@@ -39,6 +39,8 @@ public class CommentWalkResponse {
 
         private Boolean isActive;
 
+        private String descriptionForAi;
+
         public DataResponse(CommentWalk commentWalk) {
             this.id = commentWalk.getId();
             this.titleQuerySearchs = commentWalk.getTitleQuerySearchs();
@@ -49,6 +51,7 @@ public class CommentWalkResponse {
             this.keywordQueryIncludes = commentWalk.getKeywordQueryIncludes();
             this.keywordsCertainChoice = commentWalk.getKeywordsCertainChoice();
             this.matchRateValueContentQueryIncludes = commentWalk.getMatchRateValueContentQueryIncludes();
+            this.descriptionForAi = commentWalk.getDescriptionForAi();
         }
     }
 

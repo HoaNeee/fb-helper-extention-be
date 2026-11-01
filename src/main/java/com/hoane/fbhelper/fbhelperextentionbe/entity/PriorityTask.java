@@ -17,10 +17,10 @@ import tools.jackson.databind.annotation.JsonNaming;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PriorityTask {
     @NotNull(message = "Priority task post can not null")
-    @Min(value = 0, message = "Priority task post must be greater than or equal to 0")
+    @Min(value = 1, message = "Priority task post must be greater than or equal to 1")
     private Integer priorityTaskPost;
 
     @NotNull(message = "Priority task comment walk can not null")
-    @Min(value = 0, message = "Priority task comment walk must be greater than or equal to 0")
+    @Min(value = 1, message = "Priority task comment walk must be greater than or equal to 1")
     private Integer priorityTaskCommentWalk;
 }

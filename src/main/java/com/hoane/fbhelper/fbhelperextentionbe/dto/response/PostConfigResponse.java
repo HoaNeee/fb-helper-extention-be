@@ -33,7 +33,7 @@ public class PostConfigResponse {
     private Boolean isShuffleGroupNeedPost;
 
     private Boolean isSpammed;
-
+    
     public PostConfigResponse(PostConfig postConfig) {
         this.maxGroupPerBatch = postConfig.getMaxGroupPerBatch();
         this.timeDelayClickToPost = postConfig.getTimeDelayClickToPost();
@@ -44,6 +44,7 @@ public class PostConfigResponse {
         this.lastTimePost = postConfig.getLastTimePost();
         this.isShuffleGroupNeedPost = postConfig.getIsShuffleGroupNeedPost();
         this.isSpammed = postConfig.getIsSpammed();
+
     }
 
     public PostConfigResponse(PostConfigRequest postConfig) {

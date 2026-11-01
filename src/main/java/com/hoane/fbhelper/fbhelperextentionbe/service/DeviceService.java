@@ -276,7 +276,7 @@ public class DeviceService {
         deviceSettingRequest.setDeviceId(null);
 
         if (deviceSettingRequest.getStatus() != null) {
-            DeviceSettingStatus status = deviceSettingRequest.getStatusEnum();
+            DeviceSettingStatus status = DeviceSettingStatus.valueOf(deviceSettingRequest.getStatus());
             if (!status.equals(existingSetting.getStatus()) && !user.isAdmin()) {
                 throw new AuthorizationDeniedException("You are not allowed to change the status of the device setting");
             }
@@ -517,8 +517,20 @@ public class DeviceService {
 
     }
 
+    @Transactional
+    public void updateRemoteAllDevice(String userId, Boolean isRemote) {
+        deviceSettingRepository.updateRemoteAllDeviceByUserId(userId, isRemote);
+        this.updateAllDeviceSettingChangedByUserId(userId, true);
+    }
+
+    @Transactional
     public void updateAllDeviceSettingChangedByUserId(String userId, Boolean changed) {
         deviceSettingRepository.updateAllChangedByUserId(userId, changed);
+    }
+
+    @Transactional
+    public void updateStopAllDeviceByUser(String userId, Boolean isStop) {
+        deviceSettingRepository.updateIsStopTaskAllDeviceByUserId(userId, isStop);
     }
 
 
