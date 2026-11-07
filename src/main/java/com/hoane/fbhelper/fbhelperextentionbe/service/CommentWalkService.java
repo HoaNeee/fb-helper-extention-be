@@ -283,7 +283,7 @@ public class CommentWalkService {
 
         isUserAllowed(commentWalkId);
 
-        CommentWalkDetail commentWalkDetail = findCommentWalkDetail(commentWalkId, commentWalkDetailRequest.getCommentWalkId());
+        CommentWalkDetail commentWalkDetail = findCommentWalkDetail(deviceId, commentWalkDetailRequest.getCommentWalkId());
 
         Device device = deviceService.findByIdOrThrow(deviceId);
 
